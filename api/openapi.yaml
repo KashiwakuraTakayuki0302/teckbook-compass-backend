@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: TechBook Compass API
+  description: BFF API for tech book recommendation service
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /categories/with-books:
+    get:
+      summary: Get categories with ranked books
+      description: Returns all categories and the top-ranked books within each category.
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CategoryWithBooks'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /health:
+    get:
+      summary: Health check
+      description: Returns the health status of the API
+      tags:
+        - System
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+components:
+  schemas:
+    CategoryWithBooks:
+      type: object
+      required:
+        - id
+        - name
+        - icon
+        - trendTag
+        - books
+      properties:
+        id:
+          type: string
+          description: Unique category identifier
+          example: ai-ml
+        name:
+          type: string
+          description: Display name of the category
+          example: AI・機械学習
+        icon:
+          type: string
+          description: Identifier for frontend icon mapping
+          example: ai-robot
+        trendTag:
+          type: string
+          description: Trend indicator for the category
+          enum: [hot, popular, attention]
+          example: hot
+        books:
+          type: array
+          description: Top ranked books in this category
+          items:
+            $ref: '#/components/schemas/RankedBook'
+
+    RankedBook:
+      type: object
+      required:
+        - rank
+        - id
+        - title
+        - thumbnail
+      properties:
+        rank:
+          type: integer
+          description: Ranking position within the category
+          minimum: 1
+          example: 1
+        id:
+          type: string
+          description: Unique book identifier
+          example: book_001
+        title:
+          type: string
+          description: Book title
+          example: ゼロから作るDeep Learning
+        thumbnail:
+          type: string
+          format: uri
+          description: URL to book cover image
+          example: https://example.com/books/001.jpg
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: カテゴリの取得に失敗しました
