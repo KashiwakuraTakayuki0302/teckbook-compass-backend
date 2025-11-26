@@ -23,21 +23,21 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 		TrendTag: "hot",
 		Books: []*entity.Book{
 			{
-				ID:         "book_001",
+				ID:         1,
 				Title:      "ゼロから作るDeep Learning",
 				Thumbnail:  "https://example.com/books/001.jpg",
 				Rank:       1,
 				CategoryID: "ai-ml",
 			},
 			{
-				ID:         "book_002",
+				ID:         2,
 				Title:      "機械学習エンジニアのための本",
 				Thumbnail:  "https://example.com/books/002.jpg",
 				Rank:       2,
 				CategoryID: "ai-ml",
 			},
 			{
-				ID:         "book_003",
+				ID:         3,
 				Title:      "Python機械学習プログラミング",
 				Thumbnail:  "https://example.com/books/003.jpg",
 				Rank:       3,
@@ -54,21 +54,21 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 		TrendTag: "popular",
 		Books: []*entity.Book{
 			{
-				ID:         "book_101",
+				ID:         101,
 				Title:      "リーダブルコード",
 				Thumbnail:  "https://example.com/books/101.jpg",
 				Rank:       1,
 				CategoryID: "web",
 			},
 			{
-				ID:         "book_102",
+				ID:         102,
 				Title:      "良いコード/悪いコードで学ぶ設計入門",
 				Thumbnail:  "https://example.com/books/102.jpg",
 				Rank:       2,
 				CategoryID: "web",
 			},
 			{
-				ID:         "book_103",
+				ID:         103,
 				Title:      "Web API: The Good Parts",
 				Thumbnail:  "https://example.com/books/103.jpg",
 				Rank:       3,
@@ -85,21 +85,21 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 		TrendTag: "attention",
 		Books: []*entity.Book{
 			{
-				ID:         "book_201",
+				ID:         201,
 				Title:      "AWSではじめるインフラ構築入門",
 				Thumbnail:  "https://example.com/books/201.jpg",
 				Rank:       1,
 				CategoryID: "cloud",
 			},
 			{
-				ID:         "book_202",
+				ID:         202,
 				Title:      "Kubernetes実践ガイド",
 				Thumbnail:  "https://example.com/books/202.jpg",
 				Rank:       2,
 				CategoryID: "cloud",
 			},
 			{
-				ID:         "book_203",
+				ID:         203,
 				Title:      "インフラエンジニアの教科書",
 				Thumbnail:  "https://example.com/books/203.jpg",
 				Rank:       3,

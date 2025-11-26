@@ -7,7 +7,7 @@ import (
 )
 
 // SetupRouter ルーターをセットアップ
-func SetupRouter(categoryHandler *handler.CategoryHandler) *gin.Engine {
+func SetupRouter(categoryHandler *handler.CategoryHandler, rankingHandler *handler.RankingHandler) *gin.Engine {
 	r := gin.Default()
 
 	// CORSミドルウェア
@@ -34,6 +34,9 @@ func SetupRouter(categoryHandler *handler.CategoryHandler) *gin.Engine {
 
 	// カテゴリエンドポイント
 	r.GET("/categories/with-books", categoryHandler.GetCategoriesWithBooks)
+
+	// ランキングエンドポイント
+	r.GET("/rankings", rankingHandler.GetRankings)
 
 	return r
 }

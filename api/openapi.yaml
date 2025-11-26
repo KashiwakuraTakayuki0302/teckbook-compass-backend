@@ -36,6 +36,73 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /rankings:
+    get:
+      summary: Get overall rankings of technical books
+      description: |
+        Returns the ranking list of technical books for a given period.
+        Default range is `daily` and default limit is 5.
+      tags:
+        - Rankings
+      parameters:
+        - name: range
+          in: query
+          description: Ranking period
+          required: false
+          schema:
+            type: string
+            enum: [daily, monthly, yearly]
+            default: daily
+
+        - name: limit
+          in: query
+          description: Number of ranking items to return
+          required: false
+          schema:
+            type: integer
+            default: 5
+            minimum: 1
+            maximum: 100
+
+        - name: offset
+          in: query
+          description: Offset for pagination
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+
+        - name: category
+          in: query
+          description: Filter by category ID (optional)
+          required: false
+          schema:
+            type: string
+            example: ai-ml
+
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  range:
+                    type: string
+                    example: daily
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RankedBookDetail'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /health:
     get:
       summary: Health check
@@ -102,9 +169,9 @@ components:
           minimum: 1
           example: 1
         id:
-          type: string
+          type: integer
           description: Unique book identifier
-          example: book_001
+          example: 1
         title:
           type: string
           description: Book title
@@ -114,6 +181,79 @@ components:
           format: uri
           description: URL to book cover image
           example: https://example.com/books/001.jpg
+
+    RankedBookDetail:
+      type: object
+      required:
+        - rank
+        - id
+        - title
+        - author
+        - rating
+        - reviewCount
+        - publishedAt
+        - thumbnail
+        - tags
+        - qiitaMentions
+        - amazonUrl
+        - rakutenUrl
+      properties:
+        rank:
+          type: integer
+          description: Ranking position
+          minimum: 1
+          example: 1
+        id:
+          type: integer
+          description: Primary key (book ID)
+          example: 101
+        title:
+          type: string
+          description: Book title
+          example: 良いコード/悪いコードで学ぶ設計の基本
+        author:
+          type: string
+          description: Author name
+          example: メルカリ
+        rating:
+          type: number
+          format: float
+          description: Book rating
+          example: 4.9
+        reviewCount:
+          type: integer
+          description: Number of reviews
+          example: 580
+        publishedAt:
+          type: string
+          format: date
+          description: Publication date
+          example: 2023-04-01
+        thumbnail:
+          type: string
+          format: uri
+          description: URL to book cover image
+          example: https://example.com/books/101.jpg
+        tags:
+          type: array
+          description: Tags for badge display
+          items:
+            type: string
+          example: ["設計", "ベストプラクティス", "Web"]
+        qiitaMentions:
+          type: integer
+          description: Number of times this book is mentioned on Qiita
+          example: 12
+        amazonUrl:
+          type: string
+          format: uri
+          description: Amazon product URL
+          example: https://amazon.co.jp/dp/xxxx
+        rakutenUrl:
+          type: string
+          format: uri
+          description: Rakuten Books URL
+          example: https://books.rakuten.co.jp/xxxx
 
     Error:
       type: object
