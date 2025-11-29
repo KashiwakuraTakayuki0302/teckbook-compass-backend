@@ -38,5 +38,8 @@ func SetupRouter(categoryHandler *handler.CategoryHandler, rankingHandler *handl
 	// ランキングエンドポイント
 	r.GET("/rankings", rankingHandler.GetRankings)
 
+	// OpenAPI仕様ファイルの提供
+	r.StaticFile("/api/openapi.yaml", "./api/openapi.yaml")
+
 	return r
 }
