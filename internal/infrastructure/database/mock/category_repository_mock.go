@@ -19,7 +19,7 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 	aiCategory := &entity.Category{
 		ID:       "ai-ml",
 		Name:     "AI・機械学習",
-		Icon:     "ai-robot",
+		Icon:     "robot",
 		TrendTag: "hot",
 		Books: []*entity.Book{
 			{
@@ -50,7 +50,7 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 	webCategory := &entity.Category{
 		ID:       "web",
 		Name:     "Web開発",
-		Icon:     "web-browser",
+		Icon:     "pc",
 		TrendTag: "popular",
 		Books: []*entity.Book{
 			{

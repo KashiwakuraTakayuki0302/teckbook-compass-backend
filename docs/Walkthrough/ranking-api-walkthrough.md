@@ -2,7 +2,7 @@
 
 ## 実装概要
 
-総合ランキング取得API (`GET /rankings`) を実装しました。このAPIは技術書の総合ランキングを期間（daily/monthly/yearly）、カテゴリフィルタ、ページネーション対応で取得できます。
+総合ランキング取得API (`GET /rankings`) を実装しました。このAPIは技術書の総合ランキングを期間（all/monthly/yearly）、カテゴリフィルタ、ページネーション対応で取得できます。
 
 ## 実装した変更
 
@@ -38,7 +38,7 @@
 
 `GetRankings` メソッドのモック実装を追加：
 - 10冊の書籍データを含むモックデータ
-- 期間（daily/monthly/yearly）に応じた異なるランキング
+- 期間（all/monthly/yearly）に応じた異なるランキング
 - カテゴリフィルタリング機能
 - ページネーション機能
 
@@ -62,7 +62,7 @@
 
 HTTPハンドラを実装：
 - クエリパラメータのバリデーション
-- デフォルト値の設定（range=daily, limit=5, offset=0）
+- デフォルト値の設定（range=all, limit=5, offset=0）
 - エラーハンドリング
 
 #### [router.go](file:///Users/kashiwakura/develop/teckbook-compass-backend/internal/interface/router/router.go)
@@ -81,7 +81,7 @@ HTTPハンドラを実装：
 
 ## テスト結果
 
-### 1. デフォルトパラメータ（daily, limit=5）
+### 1. デフォルトパラメータ（all, limit=5）
 
 ```bash
 curl -X GET "http://localhost:8080/rankings"
@@ -89,7 +89,7 @@ curl -X GET "http://localhost:8080/rankings"
 
 **結果**: ✅ 成功
 - 5件の書籍データを返却
-- `range: "daily"`
+- `range: "all"`
 - 全フィールド（rank, id, title, author, rating等）が正しく含まれる
 
 ### 2. 月次ランキング
@@ -149,8 +149,8 @@ curl -X GET "http://localhost:8080/rankings?range=invalid"
 ### ✅ 成功項目
 
 1. **エンドポイント動作**: `/rankings` が正常に動作
-2. **期間パラメータ**: daily/monthly/yearly 全て対応
-3. **デフォルト値**: range=daily, limit=5, offset=0 が正しく設定
+2. **期間パラメータ**: all/monthly/yearly 全て対応
+3. **デフォルト値**: range=all, limit=5, offset=0 が正しく設定
 4. **カテゴリフィルタ**: categoryパラメータでフィルタリング可能
 5. **ページネーション**: limit/offsetが正常に機能
 6. **バリデーション**: 不正なパラメータで適切なエラーを返却

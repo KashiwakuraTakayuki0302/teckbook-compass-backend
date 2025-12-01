@@ -211,6 +211,8 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 
 	// 期間によってランキングを調整（モック用）
 	switch rangeType {
+	case "all":
+		// 全期間ランキング（デフォルト）- そのままの順位
 	case "monthly":
 		// 月次ランキングは少し順位を変更
 		books[0].Rank = 2

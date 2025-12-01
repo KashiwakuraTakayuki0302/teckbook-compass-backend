@@ -2,7 +2,7 @@
 
 ## 概要
 
-総合ランキング取得API (`GET /rankings`) を実装します。このAPIは、技術書の総合ランキングを期間（日次/月次/年次）、カテゴリ、ページネーション対応で取得できるようにします。
+総合ランキング取得API (`GET /rankings`) を実装します。このAPIは、技術書の総合ランキングを期間（全期間/月次/年次）、カテゴリ、ページネーション対応で取得できるようにします。
 
 既存の `/categories/with-books` エンドポイントと同様のアーキテクチャパターン（Handler → Usecase → Repository）を踏襲し、現在はモックデータで実装します。
 
@@ -40,7 +40,7 @@ GetRankings(ctx context.Context, range string, limit int, offset int, categoryID
 `GetRankings` メソッドのモック実装を追加します。以下のモックデータを返します：
 
 - 複数の書籍データ（著者、評価、レビュー数、タグなど含む）
-- `range` パラメータ（daily/monthly/yearly）に応じた異なるランキング
+- `range` パラメータ（all/monthly/yearly）に応じた異なるランキング
 - `categoryID` が指定された場合のフィルタリング
 - `limit` と `offset` によるページネーション
 
@@ -93,7 +93,7 @@ type RankedBookDTO struct {
 - `RankingUsecase` への依存
 - `GetRankings(c *gin.Context)` メソッド
 - クエリパラメータのバリデーション（range, limit, offset, category）
-- デフォルト値の設定（range=daily, limit=5, offset=0）
+- デフォルト値の設定（range=all, limit=5, offset=0）
 
 #### [MODIFY] [router.go](file:///Users/kashiwakura/develop/teckbook-compass-backend/internal/interface/router/router.go)
 
@@ -123,10 +123,10 @@ r.GET("/rankings", rankingHandler.GetRankings)
 
 #### [MODIFY] [openapi.yaml](file:///Users/kashiwakura/develop/teckbook-compass-backend/api/openapi.yaml)
 
-提供されたOpenAPI定義を追加します（`range` パラメータに `yearly` を追加）：
+提供されたOpenAPI定義を追加します：
 
 - `/rankings` エンドポイント
-- クエリパラメータ（range: daily/monthly/yearly, limit, offset, category）
+- クエリパラメータ（range: all/monthly/yearly, limit, offset, category）
 - `RankedBook` スキーマ（既存のものを拡張）
 
 ## 検証計画
@@ -148,7 +148,7 @@ make run
 別のターミナルで以下のテストを実行：
 
 ```bash
-# 1. 基本的なランキング取得（デフォルト: daily, limit=5）
+# 1. 基本的なランキング取得（デフォルト: all, limit=5）
 curl -X GET "http://localhost:8080/rankings"
 
 # 2. 月次ランキング取得

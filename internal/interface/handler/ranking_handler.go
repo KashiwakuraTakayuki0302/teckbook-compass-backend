@@ -26,7 +26,7 @@ func NewRankingHandler(rankingUsecase *usecase.RankingUsecase) *RankingHandler {
 // @Tags rankings
 // @Accept json
 // @Produce json
-// @Param range query string false "ランキング期間 (daily, monthly, yearly)" default(daily)
+// @Param range query string false "ランキング期間 (all, monthly, yearly)" default(all)
 // @Param limit query int false "取得件数" default(5) minimum(1) maximum(100)
 // @Param offset query int false "オフセット" default(0) minimum(0)
 // @Param category query string false "カテゴリID"
@@ -36,14 +36,14 @@ func NewRankingHandler(rankingUsecase *usecase.RankingUsecase) *RankingHandler {
 // @Router /rankings [get]
 func (h *RankingHandler) GetRankings(c *gin.Context) {
 	// クエリパラメータの取得とデフォルト値設定
-	rangeType := c.DefaultQuery("range", "daily")
+	rangeType := c.DefaultQuery("range", "all")
 	limitStr := c.DefaultQuery("limit", "5")
 	offsetStr := c.DefaultQuery("offset", "0")
 	categoryID := c.Query("category")
 
 	// バリデーション: range
-	if rangeType != "daily" && rangeType != "monthly" && rangeType != "yearly" {
-		response.Error(c, 400, "range パラメータは daily, monthly, yearly のいずれかである必要があります")
+	if rangeType != "all" && rangeType != "monthly" && rangeType != "yearly" {
+		response.Error(c, 400, "range パラメータは all, monthly, yearly のいずれかである必要があります")
 		return
 	}
 

@@ -41,7 +41,7 @@ paths:
       summary: Get overall rankings of technical books
       description: |
         Returns the ranking list of technical books for a given period.
-        Default range is `daily` and default limit is 5.
+        Default range is `all` and default limit is 5.
       tags:
         - Rankings
       parameters:
@@ -51,8 +51,8 @@ paths:
           required: false
           schema:
             type: string
-            enum: [daily, monthly, yearly]
-            default: daily
+            enum: [all, monthly, yearly]
+            default: all
 
         - name: limit
           in: query
@@ -91,7 +91,7 @@ paths:
                 properties:
                   range:
                     type: string
-                    example: daily
+                    example: all
                   items:
                     type: array
                     items:
