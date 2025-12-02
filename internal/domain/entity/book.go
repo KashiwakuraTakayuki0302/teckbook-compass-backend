@@ -4,7 +4,7 @@ import "time"
 
 // Book 書籍エンティティ
 type Book struct {
-	ID            int       // 書籍ID（主キー）
+	BookID        string    // 書籍ID（ISBN形式）
 	Title         string    // 書籍タイトル
 	Author        string    // 著者名
 	Rating        float64   // 評価（0.0-5.0）

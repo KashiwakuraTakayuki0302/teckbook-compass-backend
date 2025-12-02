@@ -9,7 +9,7 @@ type RankingResponse struct {
 // RankedBookItem ランキング書籍アイテム
 type RankedBookItem struct {
 	Rank          int      `json:"rank"`
-	ID            int      `json:"id"`
+	BookID        string   `json:"bookId"`
 	Title         string   `json:"title"`
 	Author        string   `json:"author"`
 	Rating        float64  `json:"rating"`

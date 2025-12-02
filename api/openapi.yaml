@@ -103,6 +103,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /books/{bookId}:
+    get:
+      summary: Get book detail information
+      description: 指定された書籍IDの詳細情報を取得する
+      tags:
+        - Books
+      parameters:
+        - name: bookId
+          in: path
+          required: true
+          description: 取得したい書籍のID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 書籍詳細情報の取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDetail'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /health:
     get:
       summary: Health check
@@ -159,7 +198,7 @@ components:
       type: object
       required:
         - rank
-        - id
+        - bookId
         - title
         - thumbnail
       properties:
@@ -168,10 +207,10 @@ components:
           description: Ranking position within the category
           minimum: 1
           example: 1
-        id:
-          type: integer
-          description: Unique book identifier
-          example: 1
+        bookId:
+          type: string
+          description: 書籍ID（ISBN形式）
+          example: "9784873117584"
         title:
           type: string
           description: Book title
@@ -186,7 +225,7 @@ components:
       type: object
       required:
         - rank
-        - id
+        - bookId
         - title
         - author
         - rating
@@ -203,10 +242,10 @@ components:
           description: Ranking position
           minimum: 1
           example: 1
-        id:
-          type: integer
-          description: Primary key (book ID)
-          example: 101
+        bookId:
+          type: string
+          description: 書籍ID（ISBN形式）
+          example: "9784297125967"
         title:
           type: string
           description: Book title
@@ -254,6 +293,128 @@ components:
           format: uri
           description: Rakuten Books URL
           example: https://books.rakuten.co.jp/xxxx
+
+    BookDetail:
+      type: object
+      properties:
+        bookId:
+          type: string
+          description: 書籍ID（ISBN形式）
+          example: "9784297125967"
+        title:
+          type: string
+          description: 書籍タイトル
+          example: "良いコード／悪いコードで学ぶ設計入門 〜保守しやすい成長し続けるコードの書き方〜"
+        author:
+          type: string
+          description: 著者名
+          example: "仙塲 大也"
+        publishedDate:
+          type: string
+          format: date
+          description: 出版日
+          example: "2022-04-30"
+        price:
+          type: integer
+          description: 価格
+          example: 3080
+        isbn:
+          type: string
+          description: ISBN
+          example: "978-4297125967"
+        bookImage:
+          type: string
+          format: uri
+          description: 書籍画像URL
+          example: "https://example.com/books/9784297125967.jpg"
+        tags:
+          type: array
+          description: タグ配列
+          items:
+            type: string
+          example: ["設計", "初学者", "初級者", "クリーンコード"]
+        overview:
+          type: string
+          description: 書籍の概要
+          example: "本書は、設計の基本から実務的な観点をチェックし、保守しやすく成長し続けるコードの書き方を学べる入門書です。"
+        aboutThisBook:
+          type: array
+          description: この本について（ポイント）
+          items:
+            type: string
+          example:
+            - "設計の原則、SOLID原則、デザインパターンなど、実務で必要な基礎を体系的に学べる"
+            - "具体的なコード例を交えながら、なぜそのように設計するべきなのかを丁寧に解説"
+        trendingPoints:
+          type: array
+          description: 注目ポイント
+          items:
+            type: string
+          example:
+            - "設計の基本がわかりやすく説明されている"
+            - "初心者から中級者まで学べる内容"
+            - "実務で即座に活かせるテクニック"
+        amazonReviewSummary:
+          $ref: '#/components/schemas/AmazonReviewSummary'
+        featuredReviews:
+          type: array
+          description: 注目レビュー
+          items:
+            $ref: '#/components/schemas/Review'
+        purchaseLinks:
+          $ref: '#/components/schemas/PurchaseLinks'
+
+    AmazonReviewSummary:
+      type: object
+      description: Amazonレビューサマリー
+      properties:
+        averageRating:
+          type: number
+          format: float
+          description: 平均評価
+          example: 4.5
+        totalReviews:
+          type: integer
+          description: レビュー総数
+          example: 234
+
+    Review:
+      type: object
+      description: レビュー
+      properties:
+        reviewer:
+          type: string
+          description: レビュアー名
+          example: "エンジニア太郎"
+        date:
+          type: string
+          format: date
+          description: レビュー日付
+          example: "2024-01-05"
+        rating:
+          type: number
+          format: float
+          description: 評価
+          example: 5
+        comment:
+          type: string
+          description: コメント
+          example: "設計の大切さが理解できた。今まで改善できていなかったコードが、なぜダメなのかが明確に理解できた。"
+
+    PurchaseLinks:
+      type: object
+      description: 購入リンク
+      properties:
+        amazon:
+          type: string
+          format: uri
+          description: Amazon URL
+          example: "https://www.amazon.co.jp/dp/4297125966"
+        rakuten:
+          type: string
+          format: uri
+          description: 楽天 URL
+          example: "https://books.rakuten.co.jp/"
 
     Error:
       type: object

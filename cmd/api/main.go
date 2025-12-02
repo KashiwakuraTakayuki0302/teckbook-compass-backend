@@ -21,13 +21,15 @@ func main() {
 	// ユースケースの初期化
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, bookRepo)
 	rankingUsecase := usecase.NewRankingUsecase(bookRepo)
+	bookDetailUsecase := usecase.NewBookDetailUsecase(bookRepo)
 
 	// ハンドラの初期化
 	categoryHandler := handler.NewCategoryHandler(categoryUsecase)
 	rankingHandler := handler.NewRankingHandler(rankingUsecase)
+	bookDetailHandler := handler.NewBookDetailHandler(bookDetailUsecase)
 
 	// ルーターのセットアップ
-	r := router.SetupRouter(categoryHandler, rankingHandler)
+	r := router.SetupRouter(categoryHandler, rankingHandler, bookDetailHandler)
 
 	// サーバー起動
 	addr := fmt.Sprintf(":%s", cfg.ServerPort)

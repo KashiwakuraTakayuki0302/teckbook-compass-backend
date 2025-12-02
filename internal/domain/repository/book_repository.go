@@ -12,4 +12,7 @@ type BookRepository interface {
 
 	// GetRankings 総合ランキングを取得
 	GetRankings(ctx context.Context, rangeType string, limit int, offset int, categoryID string) ([]*entity.Book, error)
+
+	// GetBookByID 書籍IDで書籍詳細を取得
+	GetBookByID(ctx context.Context, bookID string) (*entity.BookDetail, error)
 }
