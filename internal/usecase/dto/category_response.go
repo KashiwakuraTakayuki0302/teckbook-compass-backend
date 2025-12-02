@@ -17,7 +17,7 @@ type CategoryItem struct {
 // BookItem 書籍アイテム
 type BookItem struct {
 	Rank      int    `json:"rank"`
-	ID        int    `json:"id"`
+	BookID    string `json:"bookId"`
 	Title     string `json:"title"`
 	Thumbnail string `json:"thumbnail"`
 }

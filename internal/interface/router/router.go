@@ -7,7 +7,7 @@ import (
 )
 
 // SetupRouter ルーターをセットアップ
-func SetupRouter(categoryHandler *handler.CategoryHandler, rankingHandler *handler.RankingHandler) *gin.Engine {
+func SetupRouter(categoryHandler *handler.CategoryHandler, rankingHandler *handler.RankingHandler, bookDetailHandler *handler.BookDetailHandler) *gin.Engine {
 	r := gin.Default()
 
 	// CORSミドルウェア
@@ -37,6 +37,9 @@ func SetupRouter(categoryHandler *handler.CategoryHandler, rankingHandler *handl
 
 	// ランキングエンドポイント
 	r.GET("/rankings", rankingHandler.GetRankings)
+
+	// 書籍詳細エンドポイント
+	r.GET("/books/:bookId", bookDetailHandler.GetBookDetail)
 
 	// OpenAPI仕様ファイルの提供
 	r.StaticFile("/api/openapi.yaml", "./api/openapi.yaml")

@@ -38,7 +38,7 @@ func (uc *CategoryUsecase) GetCategoriesWithBooks(ctx context.Context) (*dto.Cat
 		for _, book := range category.Books {
 			books = append(books, dto.BookItem{
 				Rank:      book.Rank,
-				ID:        book.ID,
+				BookID:    book.BookID,
 				Title:     book.Title,
 				Thumbnail: book.Thumbnail,
 			})

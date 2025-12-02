@@ -31,7 +31,7 @@ func (uc *RankingUsecase) GetRankings(ctx context.Context, rangeType string, lim
 	for _, book := range books {
 		items = append(items, dto.RankedBookItem{
 			Rank:          book.Rank,
-			ID:            book.ID,
+			BookID:        book.BookID,
 			Title:         book.Title,
 			Author:        book.Author,
 			Rating:        book.Rating,

@@ -58,7 +58,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 	// 基本的な書籍データ
 	books := []*entity.Book{
 		{
-			ID:            101,
+			BookID:        "9784297125967",
 			Title:         "良いコード/悪いコードで学ぶ設計入門",
 			Author:        "仙塲大也",
 			Rating:        4.9,
@@ -73,7 +73,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "web",
 		},
 		{
-			ID:            1,
+			BookID:        "9784873117584",
 			Title:         "ゼロから作るDeep Learning",
 			Author:        "斎藤康毅",
 			Rating:        4.7,
@@ -88,7 +88,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "ai-ml",
 		},
 		{
-			ID:            102,
+			BookID:        "9784873115658",
 			Title:         "リーダブルコード",
 			Author:        "Dustin Boswell",
 			Rating:        4.8,
@@ -103,7 +103,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "web",
 		},
 		{
-			ID:            201,
+			BookID:        "9784798163444",
 			Title:         "AWSではじめるインフラ構築入門",
 			Author:        "中垣健志",
 			Rating:        4.5,
@@ -118,7 +118,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "cloud",
 		},
 		{
-			ID:            2,
+			BookID:        "9784297118372",
 			Title:         "機械学習エンジニアのための本",
 			Author:        "有賀康顕",
 			Rating:        4.6,
@@ -133,7 +133,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "ai-ml",
 		},
 		{
-			ID:            103,
+			BookID:        "9784873116860",
 			Title:         "Web API: The Good Parts",
 			Author:        "水野貴明",
 			Rating:        4.4,
@@ -148,7 +148,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "web",
 		},
 		{
-			ID:            202,
+			BookID:        "9784295005643",
 			Title:         "Kubernetes実践ガイド",
 			Author:        "北山晋吾",
 			Rating:        4.3,
@@ -163,7 +163,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "cloud",
 		},
 		{
-			ID:            3,
+			BookID:        "9784295003373",
 			Title:         "Python機械学習プログラミング",
 			Author:        "Sebastian Raschka",
 			Rating:        4.5,
@@ -178,7 +178,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "ai-ml",
 		},
 		{
-			ID:            203,
+			BookID:        "9784297113513",
 			Title:         "インフラエンジニアの教科書",
 			Author:        "佐野裕",
 			Rating:        4.2,
@@ -193,7 +193,7 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 			CategoryID:    "cloud",
 		},
 		{
-			ID:            104,
+			BookID:        "9784873114798",
 			Title:         "プログラマが知るべき97のこと",
 			Author:        "和田卓人",
 			Rating:        4.6,
@@ -232,4 +232,157 @@ func (r *BookRepositoryMock) createMockRankingData(rangeType string) []*entity.B
 func parseDate(dateStr string) time.Time {
 	t, _ := time.Parse("2006-01-02", dateStr)
 	return t
+}
+
+// GetBookByID 書籍IDで書籍詳細を取得（モックデータ）
+func (r *BookRepositoryMock) GetBookByID(ctx context.Context, bookID string) (*entity.BookDetail, error) {
+	// モック書籍詳細データ
+	mockBookDetails := map[string]*entity.BookDetail{
+		"9784297125967": {
+			BookID:        "9784297125967",
+			Title:         "良いコード／悪いコードで学ぶ設計入門 〜保守しやすい成長し続けるコードの書き方〜",
+			Author:        "仙塲 大也",
+			PublishedDate: parseDate("2022-04-30"),
+			Price:         3080,
+			ISBN:          "978-4297125967",
+			BookImage:     "https://example.com/books/9784297125967.jpg",
+			Tags:          []string{"設計", "初学者", "初級者", "クリーンコード"},
+			Overview:      "本書は、設計の基本から実務的な観点をチェックし、保守しやすく成長し続けるコードの書き方を学べる入門書です。設計の原則や実務的なテクニックまで幅広く学べます。",
+			AboutThisBook: []string{
+				"設計の原則、SOLID原則、デザインパターンなど、実務で必要な基礎を体系的に学べる",
+				"具体的なコード例を交えながら、なぜそのように設計するべきなのかを丁寧に解説",
+			},
+			TrendingPoints: []string{
+				"設計の基本がわかりやすく説明されている",
+				"初心者から中級者まで学べる内容",
+				"実務で即座に活かせるテクニック",
+				"コードの品質向上に直結する知識",
+				"チーム開発での設計思想が理解できる",
+			},
+			AmazonReviewSummary: entity.AmazonReviewSummary{
+				AverageRating: 4.5,
+				TotalReviews:  234,
+			},
+			FeaturedReviews: []entity.Review{
+				{
+					Reviewer: "エンジニア太郎",
+					Date:     parseDate("2024-01-05"),
+					Rating:   5,
+					Comment:  "設計の大切さが理解できた。今まで改善できていなかったコードが、なぜダメなのかが明確に理解できた。新人教育にも使いたいと思った。",
+				},
+				{
+					Reviewer: "開発リーダー花子",
+					Date:     parseDate("2024-01-10"),
+					Rating:   5,
+					Comment:  "実務で即座に活かせる。書かれている内容をチームで共有したところ、コードレビューの質が格段に向上しました。",
+				},
+				{
+					Reviewer: "プログラマー次郎",
+					Date:     parseDate("2024-01-05"),
+					Rating:   4,
+					Comment:  "初心者向けとしては非常にわかりやすい。ただし、より深い設計を学びたい場合は他の書籍と併用したほうが良いかもしれません。",
+				},
+			},
+			PurchaseLinks: entity.PurchaseLinks{
+				Amazon:  "https://www.amazon.co.jp/dp/4297125966",
+				Rakuten: "https://books.rakuten.co.jp/",
+			},
+		},
+		"9784873117584": {
+			BookID:        "9784873117584",
+			Title:         "ゼロから作るDeep Learning ―Pythonで学ぶディープラーニングの理論と実装",
+			Author:        "斎藤 康毅",
+			PublishedDate: parseDate("2016-09-24"),
+			Price:         3740,
+			ISBN:          "978-4873117584",
+			BookImage:     "https://example.com/books/9784873117584.jpg",
+			Tags:          []string{"AI", "機械学習", "Python", "ディープラーニング"},
+			Overview:      "ディープラーニングの本格的な入門書。実際にPythonでディープラーニングを実装することで、ディープラーニングの原理を理解できます。",
+			AboutThisBook: []string{
+				"ディープラーニングの基礎理論を、実際にコードを書きながら学べる",
+				"外部ライブラリを使わず、NumPyだけで実装することで本質を理解",
+			},
+			TrendingPoints: []string{
+				"ディープラーニングの仕組みが基礎から理解できる",
+				"実装を通じて学ぶため記憶に残りやすい",
+				"AI/ML分野への入門として最適",
+				"コードがシンプルで読みやすい",
+				"段階的に難易度が上がる構成",
+			},
+			AmazonReviewSummary: entity.AmazonReviewSummary{
+				AverageRating: 4.7,
+				TotalReviews:  892,
+			},
+			FeaturedReviews: []entity.Review{
+				{
+					Reviewer: "AI初心者",
+					Date:     parseDate("2024-02-10"),
+					Rating:   5,
+					Comment:  "ディープラーニングの基礎を本当にゼロから学べました。他の本では挫折しましたが、この本は最後まで読み切れました。",
+				},
+				{
+					Reviewer: "データサイエンティスト",
+					Date:     parseDate("2024-01-20"),
+					Rating:   5,
+					Comment:  "理論だけでなく実装もできるので、理解が深まります。研修教材としても使用しています。",
+				},
+			},
+			PurchaseLinks: entity.PurchaseLinks{
+				Amazon:  "https://www.amazon.co.jp/dp/4873117585",
+				Rakuten: "https://books.rakuten.co.jp/rb/14258520/",
+			},
+		},
+		"9784873115658": {
+			BookID:        "9784873115658",
+			Title:         "リーダブルコード ―より良いコードを書くためのシンプルで実践的なテクニック",
+			Author:        "Dustin Boswell, Trevor Foucher",
+			PublishedDate: parseDate("2012-06-23"),
+			Price:         2640,
+			ISBN:          "978-4873115658",
+			BookImage:     "https://example.com/books/9784873115658.jpg",
+			Tags:          []string{"コーディング", "可読性", "ベストプラクティス"},
+			Overview:      "コードは理解しやすくなければならない。本書はこの原則を日常のコーディングの様々な場面に適用する方法を紹介します。",
+			AboutThisBook: []string{
+				"読みやすいコードを書くための実践的なテクニックを解説",
+				"変数名、コメント、制御フローなど具体的な改善方法を学べる",
+			},
+			TrendingPoints: []string{
+				"プログラマー必読の名著",
+				"コードレビューの質が向上する",
+				"新人教育に最適",
+				"言語に依存しない普遍的な内容",
+				"すぐに実践できるテクニック",
+			},
+			AmazonReviewSummary: entity.AmazonReviewSummary{
+				AverageRating: 4.8,
+				TotalReviews:  1203,
+			},
+			FeaturedReviews: []entity.Review{
+				{
+					Reviewer: "シニアエンジニア",
+					Date:     parseDate("2024-01-15"),
+					Rating:   5,
+					Comment:  "何度読み返しても新しい発見がある。チームメンバー全員に読んでもらいたい一冊。",
+				},
+				{
+					Reviewer: "新卒エンジニア",
+					Date:     parseDate("2024-02-01"),
+					Rating:   5,
+					Comment:  "入社前に読んでおいてよかった。コードレビューで指摘される前に自分で気づけるようになった。",
+				},
+			},
+			PurchaseLinks: entity.PurchaseLinks{
+				Amazon:  "https://www.amazon.co.jp/dp/4873115655",
+				Rakuten: "https://books.rakuten.co.jp/rb/11753651/",
+			},
+		},
+	}
+
+	// 指定されたIDの書籍詳細を検索
+	if bookDetail, exists := mockBookDetails[bookID]; exists {
+		return bookDetail, nil
+	}
+
+	// 存在しない場合はnilを返す
+	return nil, nil
 }

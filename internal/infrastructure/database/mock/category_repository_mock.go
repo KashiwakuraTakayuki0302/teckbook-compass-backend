@@ -23,21 +23,21 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 		TrendTag: "hot",
 		Books: []*entity.Book{
 			{
-				ID:         1,
+				BookID:     "9784873117584",
 				Title:      "ゼロから作るDeep Learning",
 				Thumbnail:  "https://example.com/books/001.jpg",
 				Rank:       1,
 				CategoryID: "ai-ml",
 			},
 			{
-				ID:         2,
+				BookID:     "9784297118372",
 				Title:      "機械学習エンジニアのための本",
 				Thumbnail:  "https://example.com/books/002.jpg",
 				Rank:       2,
 				CategoryID: "ai-ml",
 			},
 			{
-				ID:         3,
+				BookID:     "9784295003373",
 				Title:      "Python機械学習プログラミング",
 				Thumbnail:  "https://example.com/books/003.jpg",
 				Rank:       3,
@@ -54,21 +54,21 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 		TrendTag: "popular",
 		Books: []*entity.Book{
 			{
-				ID:         101,
+				BookID:     "9784873115658",
 				Title:      "リーダブルコード",
 				Thumbnail:  "https://example.com/books/101.jpg",
 				Rank:       1,
 				CategoryID: "web",
 			},
 			{
-				ID:         102,
+				BookID:     "9784297125967",
 				Title:      "良いコード/悪いコードで学ぶ設計入門",
 				Thumbnail:  "https://example.com/books/102.jpg",
 				Rank:       2,
 				CategoryID: "web",
 			},
 			{
-				ID:         103,
+				BookID:     "9784873116860",
 				Title:      "Web API: The Good Parts",
 				Thumbnail:  "https://example.com/books/103.jpg",
 				Rank:       3,
@@ -85,21 +85,21 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 		TrendTag: "attention",
 		Books: []*entity.Book{
 			{
-				ID:         201,
+				BookID:     "9784798163444",
 				Title:      "AWSではじめるインフラ構築入門",
 				Thumbnail:  "https://example.com/books/201.jpg",
 				Rank:       1,
 				CategoryID: "cloud",
 			},
 			{
-				ID:         202,
+				BookID:     "9784295005643",
 				Title:      "Kubernetes実践ガイド",
 				Thumbnail:  "https://example.com/books/202.jpg",
 				Rank:       2,
 				CategoryID: "cloud",
 			},
 			{
-				ID:         203,
+				BookID:     "9784297113513",
 				Title:      "インフラエンジニアの教科書",
 				Thumbnail:  "https://example.com/books/203.jpg",
 				Rank:       3,
