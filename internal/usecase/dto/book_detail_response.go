@@ -2,34 +2,33 @@ package dto
 
 // BookDetailResponse 書籍詳細取得APIのレスポンス
 type BookDetailResponse struct {
-	BookID              string                 `json:"bookId"`
-	Title               string                 `json:"title"`
-	Author              string                 `json:"author"`
-	PublishedDate       string                 `json:"publishedDate"`
-	Price               int                    `json:"price"`
-	ISBN                string                 `json:"isbn"`
-	BookImage           string                 `json:"bookImage"`
-	Tags                []string               `json:"tags"`
-	Overview            string                 `json:"overview"`
-	AboutThisBook       []string               `json:"aboutThisBook"`
-	TrendingPoints      []string               `json:"trendingPoints"`
-	AmazonReviewSummary AmazonReviewSummaryDTO `json:"amazonReviewSummary"`
-	FeaturedReviews     []ReviewDTO            `json:"featuredReviews"`
-	PurchaseLinks       PurchaseLinksDTO       `json:"purchaseLinks"`
+	BookID               string                  `json:"bookId"`
+	Title                string                  `json:"title"`
+	Author               string                  `json:"author"`
+	PublishedDate        string                  `json:"publishedDate"`
+	Price                int                     `json:"price"`
+	ISBN                 string                  `json:"isbn"`
+	BookImage            string                  `json:"bookImage"`
+	Tags                 []string                `json:"tags"`
+	Overview             string                  `json:"overview"`
+	QiitaArticles        []QiitaArticleDTO       `json:"qiitaArticles"`
+	RakutenReviewSummary RakutenReviewSummaryDTO `json:"rakutenReviewSummary"`
+	PurchaseLinks        PurchaseLinksDTO        `json:"purchaseLinks"`
 }
 
-// AmazonReviewSummaryDTO Amazonレビューサマリー
-type AmazonReviewSummaryDTO struct {
+// QiitaArticleDTO Qiita記事の紹介情報
+type QiitaArticleDTO struct {
+	Title    string `json:"title"`
+	URL      string `json:"url"`
+	Likes    int    `json:"likes"`
+	Stocks   int    `json:"stocks"`
+	Comments int    `json:"comments"`
+}
+
+// RakutenReviewSummaryDTO 楽天レビューサマリー
+type RakutenReviewSummaryDTO struct {
 	AverageRating float64 `json:"averageRating"`
 	TotalReviews  int     `json:"totalReviews"`
-}
-
-// ReviewDTO レビュー
-type ReviewDTO struct {
-	Reviewer string  `json:"reviewer"`
-	Date     string  `json:"date"`
-	Rating   float64 `json:"rating"`
-	Comment  string  `json:"comment"`
 }
 
 // PurchaseLinksDTO 購入リンク

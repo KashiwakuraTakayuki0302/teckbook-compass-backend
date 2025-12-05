@@ -304,7 +304,7 @@ components:
         title:
           type: string
           description: 書籍タイトル
-          example: "良いコード／悪いコードで学ぶ設計入門 〜保守しやすい成長し続けるコードの書き方〜"
+          example: "良いコード／悪いコードで学ぶ設計入門"
         author:
           type: string
           description: 著者名
@@ -336,70 +336,56 @@ components:
         overview:
           type: string
           description: 書籍の概要
-          example: "本書は、設計の基本から実務的な観点をチェックし、保守しやすく成長し続けるコードの書き方を学べる入門書です。"
-        aboutThisBook:
+          example: "本書は、設計の基本から実務的な観点をチェックし、保守しやすいコードの書き方を学べる入門書です。"
+        qiitaArticles:
           type: array
-          description: この本について（ポイント）
+          description: Qiita で本を紹介している記事の一覧
           items:
-            type: string
-          example:
-            - "設計の原則、SOLID原則、デザインパターンなど、実務で必要な基礎を体系的に学べる"
-            - "具体的なコード例を交えながら、なぜそのように設計するべきなのかを丁寧に解説"
-        trendingPoints:
-          type: array
-          description: 注目ポイント
-          items:
-            type: string
-          example:
-            - "設計の基本がわかりやすく説明されている"
-            - "初心者から中級者まで学べる内容"
-            - "実務で即座に活かせるテクニック"
-        amazonReviewSummary:
-          $ref: '#/components/schemas/AmazonReviewSummary'
-        featuredReviews:
-          type: array
-          description: 注目レビュー
-          items:
-            $ref: '#/components/schemas/Review'
+            $ref: '#/components/schemas/QiitaArticle'
+        rakutenReviewSummary:
+          $ref: '#/components/schemas/RakutenReviewSummary'
         purchaseLinks:
           $ref: '#/components/schemas/PurchaseLinks'
 
-    AmazonReviewSummary:
+    QiitaArticle:
       type: object
-      description: Amazonレビューサマリー
+      description: Qiita記事の紹介情報
+      properties:
+        title:
+          type: string
+          description: 記事タイトル
+          example: "良いコード/悪いコードを読んで学んだ設計の基礎"
+        url:
+          type: string
+          format: uri
+          description: 記事URL
+          example: "https://qiita.com/xxx/items/abcd1234"
+        likes:
+          type: integer
+          description: いいね（LGTM）数
+          example: 42
+        stocks:
+          type: integer
+          description: ストック数
+          example: 15
+        comments:
+          type: integer
+          description: コメント数
+          example: 3
+
+    RakutenReviewSummary:
+      type: object
+      description: 楽天レビューサマリー
       properties:
         averageRating:
           type: number
           format: float
-          description: 平均評価
-          example: 4.5
+          description: 楽天の平均評価
+          example: 4.4
         totalReviews:
           type: integer
-          description: レビュー総数
-          example: 234
-
-    Review:
-      type: object
-      description: レビュー
-      properties:
-        reviewer:
-          type: string
-          description: レビュアー名
-          example: "エンジニア太郎"
-        date:
-          type: string
-          format: date
-          description: レビュー日付
-          example: "2024-01-05"
-        rating:
-          type: number
-          format: float
-          description: 評価
-          example: 5
-        comment:
-          type: string
-          description: コメント
-          example: "設計の大切さが理解できた。今まで改善できていなかったコードが、なぜダメなのかが明確に理解できた。"
+          description: 楽天のレビュー件数
+          example: 128
 
     PurchaseLinks:
       type: object

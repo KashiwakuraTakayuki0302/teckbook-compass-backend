@@ -4,34 +4,33 @@ import "time"
 
 // BookDetail 書籍詳細エンティティ
 type BookDetail struct {
-	BookID              string              // 書籍ID（ISBN形式）
-	Title               string              // 書籍タイトル
-	Author              string              // 著者名
-	PublishedDate       time.Time           // 出版日
-	Price               int                 // 価格
-	ISBN                string              // ISBN
-	BookImage           string              // 書籍画像URL
-	Tags                []string            // タグ配列
-	Overview            string              // 概要
-	AboutThisBook       []string            // この本について（ポイント）
-	TrendingPoints      []string            // 注目ポイント
-	AmazonReviewSummary AmazonReviewSummary // Amazonレビューサマリー
-	FeaturedReviews     []Review            // 注目レビュー
-	PurchaseLinks       PurchaseLinks       // 購入リンク
+	BookID               string               // 書籍ID（ISBN形式）
+	Title                string               // 書籍タイトル
+	Author               string               // 著者名
+	PublishedDate        time.Time            // 出版日
+	Price                int                  // 価格
+	ISBN                 string               // ISBN
+	BookImage            string               // 書籍画像URL
+	Tags                 []string             // タグ配列
+	Overview             string               // 概要
+	QiitaArticles        []QiitaArticle       // Qiita紹介記事一覧
+	RakutenReviewSummary RakutenReviewSummary // 楽天レビューサマリー
+	PurchaseLinks        PurchaseLinks        // 購入リンク
 }
 
-// AmazonReviewSummary Amazonレビューサマリー
-type AmazonReviewSummary struct {
+// QiitaArticle Qiita記事の紹介情報
+type QiitaArticle struct {
+	Title    string // 記事タイトル
+	URL      string // 記事URL
+	Likes    int    // いいね（LGTM）数
+	Stocks   int    // ストック数
+	Comments int    // コメント数
+}
+
+// RakutenReviewSummary 楽天レビューサマリー
+type RakutenReviewSummary struct {
 	AverageRating float64 // 平均評価
-	TotalReviews  int     // レビュー総数
-}
-
-// Review レビューエンティティ
-type Review struct {
-	Reviewer string    // レビュアー名
-	Date     time.Time // レビュー日付
-	Rating   float64   // 評価
-	Comment  string    // コメント
+	TotalReviews  int     // レビュー件数
 }
 
 // PurchaseLinks 購入リンク
