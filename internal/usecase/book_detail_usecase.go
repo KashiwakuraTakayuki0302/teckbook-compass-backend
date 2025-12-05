@@ -31,35 +31,33 @@ func (uc *BookDetailUsecase) GetBookDetail(ctx context.Context, bookID string) (
 		return nil, nil
 	}
 
-	// エンティティをDTOに変換
-	// レビューの変換
-	reviews := make([]dto.ReviewDTO, 0, len(bookDetail.FeaturedReviews))
-	for _, review := range bookDetail.FeaturedReviews {
-		reviews = append(reviews, dto.ReviewDTO{
-			Reviewer: review.Reviewer,
-			Date:     review.Date.Format("2006-01-02"),
-			Rating:   review.Rating,
-			Comment:  review.Comment,
+	// Qiita記事の変換
+	qiitaArticles := make([]dto.QiitaArticleDTO, 0, len(bookDetail.QiitaArticles))
+	for _, article := range bookDetail.QiitaArticles {
+		qiitaArticles = append(qiitaArticles, dto.QiitaArticleDTO{
+			Title:    article.Title,
+			URL:      article.URL,
+			Likes:    article.Likes,
+			Stocks:   article.Stocks,
+			Comments: article.Comments,
 		})
 	}
 
 	return &dto.BookDetailResponse{
-		BookID:         bookDetail.BookID,
-		Title:          bookDetail.Title,
-		Author:         bookDetail.Author,
-		PublishedDate:  bookDetail.PublishedDate.Format("2006-01-02"),
-		Price:          bookDetail.Price,
-		ISBN:           bookDetail.ISBN,
-		BookImage:      bookDetail.BookImage,
-		Tags:           bookDetail.Tags,
-		Overview:       bookDetail.Overview,
-		AboutThisBook:  bookDetail.AboutThisBook,
-		TrendingPoints: bookDetail.TrendingPoints,
-		AmazonReviewSummary: dto.AmazonReviewSummaryDTO{
-			AverageRating: bookDetail.AmazonReviewSummary.AverageRating,
-			TotalReviews:  bookDetail.AmazonReviewSummary.TotalReviews,
+		BookID:        bookDetail.BookID,
+		Title:         bookDetail.Title,
+		Author:        bookDetail.Author,
+		PublishedDate: bookDetail.PublishedDate.Format("2006-01-02"),
+		Price:         bookDetail.Price,
+		ISBN:          bookDetail.ISBN,
+		BookImage:     bookDetail.BookImage,
+		Tags:          bookDetail.Tags,
+		Overview:      bookDetail.Overview,
+		QiitaArticles: qiitaArticles,
+		RakutenReviewSummary: dto.RakutenReviewSummaryDTO{
+			AverageRating: bookDetail.RakutenReviewSummary.AverageRating,
+			TotalReviews:  bookDetail.RakutenReviewSummary.TotalReviews,
 		},
-		FeaturedReviews: reviews,
 		PurchaseLinks: dto.PurchaseLinksDTO{
 			Amazon:  bookDetail.PurchaseLinks.Amazon,
 			Rakuten: bookDetail.PurchaseLinks.Rakuten,
