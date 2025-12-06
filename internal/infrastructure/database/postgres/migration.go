@@ -24,6 +24,15 @@ func (db *DB) RunMigrations(migrationsPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create migrate instance: %w", err)
 	}
+	defer func() {
+		sourceErr, dbErr := m.Close()
+		if sourceErr != nil {
+			log.Printf("Warning: failed to close migration source: %v", sourceErr)
+		}
+		if dbErr != nil {
+			log.Printf("Warning: failed to close migration database: %v", dbErr)
+		}
+	}()
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("failed to run migrations: %w", err)
@@ -58,6 +67,15 @@ func (db *DB) RollbackMigrations(migrationsPath string, steps int) error {
 	if err != nil {
 		return fmt.Errorf("failed to create migrate instance: %w", err)
 	}
+	defer func() {
+		sourceErr, dbErr := m.Close()
+		if sourceErr != nil {
+			log.Printf("Warning: failed to close migration source: %v", sourceErr)
+		}
+		if dbErr != nil {
+			log.Printf("Warning: failed to close migration database: %v", dbErr)
+		}
+	}()
 
 	if err := m.Steps(-steps); err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("failed to rollback migrations: %w", err)
@@ -66,4 +84,3 @@ func (db *DB) RollbackMigrations(migrationsPath string, steps int) error {
 	log.Printf("Rollback completed successfully (%d steps)", steps)
 	return nil
 }
-

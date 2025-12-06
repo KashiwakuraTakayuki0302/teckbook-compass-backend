@@ -1,4 +1,4 @@
-.PHONY: help run build test lint swagger-ui validate-api db-test db-migrate db-rollback build-batch
+.PHONY: help run build build-batch build-all test test-coverage lint swagger-ui validate-api db-test db-migrate db-rollback db-rollback-all clean
 
 help: ## ヘルプを表示
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

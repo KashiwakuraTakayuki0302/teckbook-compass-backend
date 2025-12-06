@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/lib/pq"
 	"teckbook-compass-backend/internal/infrastructure/config"
+
+	_ "github.com/lib/pq"
 )
 
 // DB データベース接続のラッパー
@@ -23,6 +24,7 @@ func NewConnection(cfg *config.DatabaseConfig) (*DB, error) {
 
 	// 接続テスト
 	if err := db.Ping(); err != nil {
+		db.Close() // 接続を閉じてリソースリークを防ぐ
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
@@ -37,4 +39,3 @@ func (db *DB) Close() error {
 	}
 	return nil
 }
-

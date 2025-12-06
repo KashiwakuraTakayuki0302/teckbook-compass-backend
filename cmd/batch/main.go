@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -22,15 +23,18 @@ func main() {
 	// 設定の読み込み
 	cfg := config.NewConfig()
 
+	// マイグレーションパスの取得（DB接続前に実行してリソースリークを防ぐ）
+	migrationsPath, err := getMigrationsPath()
+	if err != nil {
+		log.Fatalf("Failed to get migrations path: %v", err)
+	}
+
 	// データベース接続
 	db, err := postgres.NewConnection(&cfg.Database)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
-
-	// マイグレーションパスの取得
-	migrationsPath := getMigrationsPath()
 
 	// コマンドの実行
 	switch {
@@ -56,18 +60,17 @@ func main() {
 }
 
 // getMigrationsPath マイグレーションファイルのパスを取得
-func getMigrationsPath() string {
+func getMigrationsPath() (string, error) {
 	// 環境変数からパスを取得
 	if path := os.Getenv("MIGRATIONS_PATH"); path != "" {
-		return path
+		return path, nil
 	}
 
 	// デフォルトは実行ディレクトリからの相対パス
 	execPath, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Failed to get working directory: %v", err)
+		return "", fmt.Errorf("failed to get working directory: %w", err)
 	}
 
-	return filepath.Join(execPath, "migrations")
+	return filepath.Join(execPath, "migrations"), nil
 }
-
