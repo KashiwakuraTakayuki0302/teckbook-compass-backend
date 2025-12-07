@@ -7,9 +7,14 @@
 ```
 docs/
 ├── ImplementationPlan/     # 実装計画書
-│   └── bff-api-clean-architecture.md
+│   ├── bff-api-clean-architecture.md
+│   ├── book-detail-api-implementation-plan.md
+│   └── ranking-api-implementation-plan.md
 └── Walkthrough/            # 実装完了レポート
-    └── bff-api-implementation-report.md
+    ├── bff-api-implementation-report.md
+    ├── book-detail-api-walkthrough.md
+    ├── ranking-api-walkthrough.md
+    └── daily-batch-walkthrough.md
 ```
 
 ## ドキュメント一覧
@@ -29,6 +34,17 @@ docs/
 - [**bff-api-implementation-report.md**](./Walkthrough/bff-api-implementation-report.md)
   - BFF API実装完了レポート
   - 実装内容、検証結果、使用方法、今後の拡張予定を記載
+
+- [**book-detail-api-walkthrough.md**](./Walkthrough/book-detail-api-walkthrough.md)
+  - 書籍詳細API実装レポート
+
+- [**ranking-api-walkthrough.md**](./Walkthrough/ranking-api-walkthrough.md)
+  - ランキングAPI実装レポート
+
+- [**daily-batch-walkthrough.md**](./Walkthrough/daily-batch-walkthrough.md)
+  - 日次バッチ処理実装レポート
+  - Qiita記事収集、書籍情報取得、スコアリングの処理フロー
+  - コマンドラインオプション、環境変数設定、Slack通知
 
 ## 関連ドキュメント
 

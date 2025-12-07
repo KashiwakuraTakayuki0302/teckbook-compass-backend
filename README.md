@@ -12,6 +12,7 @@ TechBook Compassは、Qiitaのトレンド情報とAmazonの書籍データを�
 - 🔥 トレンドタグ付きカテゴリ表示（急上昇中、人気上昇、注目）
 - 📊 技術書ランキング（全体、月間、日間、年間）※今後実装予定
 - 🔍 技術書のキーワード検索 ※今後実装予定
+- ⚙️ 日次バッチ処理（Qiita記事収集・書籍情報取得・スコアリング）
 
 ## 🏗️ アーキテクチャ
 
@@ -20,12 +21,15 @@ TechBook Compassは、Qiitaのトレンド情報とAmazonの書籍データを�
 ```
 teckbook-compass-backend/
 ├── api/                    # OpenAPI仕様
-├── cmd/api/               # アプリケーションエントリーポイント
+├── cmd/
+│   ├── api/               # APIサーバーエントリーポイント
+│   └── batch/             # バッチ処理エントリーポイント
 ├── internal/
 │   ├── domain/            # ドメイン層（エンティティ、リポジトリIF）
 │   ├── usecase/           # ユースケース層（ビジネスロジック）
 │   ├── infrastructure/    # インフラ層（DB、外部API）
 │   └── interface/         # インターフェース層（HTTPハンドラ）
+├── migrations/            # データベースマイグレーション
 ├── pkg/                   # 共有ユーティリティ
 └── docs/                  # ドキュメント
 ```
@@ -92,21 +96,68 @@ make test-coverage
 # ビルド
 make build
 
+# バッチビルド
+make build-batch
+
 # クリーンアップ
 make clean
 ```
 
+### バッチ処理
+
+```bash
+# バッチ処理を実行（自動モード判定）
+go run cmd/batch/main.go -run-batch
+
+# 最新記事取得モードを強制
+go run cmd/batch/main.go -run-batch -fetch-new
+
+# 過去記事取得モードを強制
+go run cmd/batch/main.go -run-batch -fetch-historical
+
+# データベースマイグレーション
+make db-migrate
+
+# マイグレーションロールバック
+make db-rollback
+```
+
+詳細は[日次バッチ処理ドキュメント](./docs/Walkthrough/daily-batch-walkthrough.md)を参照してください。
+
 ### 環境変数
+
+#### サーバー設定
 
 | 変数名 | 説明 | デフォルト値 |
 |--------|------|-------------|
 | `PORT` | サーバーポート番号 | `8080` |
 | `ENV` | 実行環境 | `development` |
 
+#### データベース設定
+
+| 変数名 | 説明 | デフォルト値 |
+|--------|------|-------------|
+| `DB_HOST` | データベースホスト | `localhost` |
+| `DB_PORT` | データベースポート | `5432` |
+| `DB_USER` | データベースユーザー | `test` |
+| `DB_PASSWORD` | データベースパスワード | `password` |
+| `DB_NAME` | データベース名 | `teckbook` |
+
+#### 外部API設定
+
+| 変数名 | 説明 |
+|--------|------|
+| `QIITA_ACCESS_TOKEN` | Qiita APIアクセストークン |
+| `RAKUTEN_APPLICATION_ID` | 楽天アプリケーションID |
+| `RAKUTEN_APPLICATION_SECRET` | 楽天アプリケーションシークレット |
+| `SLACK_WEBHOOK_URL` | Slack Webhook URL（通知用） |
+
 ```bash
 # 環境変数の設定例
 export PORT=3000
 export ENV=production
+export DB_HOST=your-db-host
+export QIITA_ACCESS_TOKEN=your-token
 ```
 
 ### ディレクトリ構造
@@ -146,6 +197,7 @@ teckbook-compass-backend/
 
 - [実装計画](./docs/ImplementationPlan/bff-api-clean-architecture.md) - クリーンアーキテクチャ設計書
 - [実装完了レポート](./docs/Walkthrough/bff-api-implementation-report.md) - 検証結果と使用方法
+- [日次バッチ処理](./docs/Walkthrough/daily-batch-walkthrough.md) - バッチ処理の詳細ドキュメント
 
 ## 🧪 テスト
 
@@ -175,11 +227,15 @@ go test ./internal/usecase/... -v
 - [x] カテゴリ別技術書取得API
 - [x] Makefileによる開発環境整備
 - [x] モックデータでの動作確認
+- [x] PostgreSQLデータベース接続
+- [x] データベースマイグレーション
+- [x] Qiita API統合バッチジョブ
+- [x] 楽天ブックスAPI統合
+- [x] 書籍スコアリング機能
+- [x] Slack通知機能
 
 ### 今後の予定 📋
 
-- [ ] PostgreSQLデータベース接続
-- [ ] Qiita API統合バッチジョブ
 - [ ] Amazon API統合バッチジョブ
 - [ ] 技術書ランキングAPI
 - [ ] キーワード検索API
