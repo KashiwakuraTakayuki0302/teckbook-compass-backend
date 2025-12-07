@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"teckbook-compass-backend/internal/infrastructure/config"
@@ -14,6 +15,61 @@ import (
 	"teckbook-compass-backend/internal/infrastructure/external"
 	"teckbook-compass-backend/internal/usecase"
 )
+
+const lockFilePath = "/tmp/teckbook-compass-batch.lock"
+
+// BatchLock バッチの排他制御用ロック
+type BatchLock struct {
+	file *os.File
+}
+
+// AcquireLock ロックを取得
+func AcquireLock() (*BatchLock, error) {
+	// ロックファイルを開く（なければ作成）
+	file, err := os.OpenFile(lockFilePath, os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open lock file: %w", err)
+	}
+
+	// 排他ロックを取得（ノンブロッキング）
+	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+	if err != nil {
+		file.Close()
+		if err == syscall.EWOULDBLOCK {
+			return nil, fmt.Errorf("別のバッチプロセスが実行中です")
+		}
+		return nil, fmt.Errorf("failed to acquire lock: %w", err)
+	}
+
+	// PIDをファイルに書き込み（デバッグ用）
+	file.Truncate(0)
+	file.Seek(0, 0)
+	fmt.Fprintf(file, "%d\n", os.Getpid())
+
+	return &BatchLock{file: file}, nil
+}
+
+// Release ロックを解放
+func (l *BatchLock) Release() error {
+	if l.file == nil {
+		return nil
+	}
+
+	// ロックを解放
+	if err := syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN); err != nil {
+		return fmt.Errorf("failed to release lock: %w", err)
+	}
+
+	// ファイルを閉じる
+	if err := l.file.Close(); err != nil {
+		return fmt.Errorf("failed to close lock file: %w", err)
+	}
+
+	// ロックファイルを削除
+	os.Remove(lockFilePath)
+
+	return nil
+}
 
 func main() {
 	// コマンドライン引数の解析
@@ -62,6 +118,19 @@ func main() {
 		}
 
 	case *runBatch:
+		// 排他制御: ロックを取得
+		lock, err := AcquireLock()
+		if err != nil {
+			// Slack通知を送信
+			slackClient := external.NewSlackClient(cfg.Slack)
+			if slackClient.IsEnabled() {
+				slackClient.SendError("バッチ起動失敗", err.Error())
+			}
+			log.Fatalf("ロック取得失敗: %v", err)
+		}
+		defer lock.Release()
+		log.Println("排他ロックを取得しました")
+
 		log.Println("Starting batch process...")
 		if *dryRun {
 			log.Println("Running in dry-run mode")

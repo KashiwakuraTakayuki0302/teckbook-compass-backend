@@ -2,8 +2,18 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	// .envファイルを読み込み（存在しない場合はスキップ）
+	if err := godotenv.Load(); err != nil {
+		log.Println("Info: .env file not found, using environment variables")
+	}
+}
 
 // Config アプリケーション設定
 type Config struct {

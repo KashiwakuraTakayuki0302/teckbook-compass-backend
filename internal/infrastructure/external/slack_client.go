@@ -118,6 +118,29 @@ func (c *SlackClient) SendResultMessage(fetchMode string, processedArticles, new
 	})
 }
 
+// SendError エラーメッセージを送信
+func (c *SlackClient) SendError(title, errorMessage string) error {
+	if !c.IsEnabled() {
+		return nil
+	}
+
+	text := "🚨 *TeckBook Compass エラー*"
+
+	attachments := []SlackAttachment{
+		{
+			Color:  "danger",
+			Title:  title,
+			Text:   errorMessage,
+			Footer: fmt.Sprintf("発生時刻: %s", time.Now().Format("2006-01-02 15:04:05")),
+		},
+	}
+
+	return c.sendWebhook(SlackMessage{
+		Text:        text,
+		Attachments: attachments,
+	})
+}
+
 // SendLog ログメッセージを送信（何もしない - 親メッセージのみ）
 func (c *SlackClient) SendLog(message string) error {
 	return nil
