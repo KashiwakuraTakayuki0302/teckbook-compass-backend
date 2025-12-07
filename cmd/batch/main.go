@@ -78,7 +78,6 @@ func main() {
 	migrateSteps := flag.Int("migrate-steps", 1, "Number of migration steps to rollback")
 	testConnection := flag.Bool("test-connection", false, "Test database connection")
 	runBatch := flag.Bool("run-batch", false, "Run the batch process to fetch and process articles")
-	dryRun := flag.Bool("dry-run", false, "Run batch in dry-run mode (no DB writes)")
 	fetchNew := flag.Bool("fetch-new", false, "Force fetch new articles mode (use with -run-batch)")
 	fetchHistorical := flag.Bool("fetch-historical", false, "Force fetch historical articles mode (use with -run-batch)")
 
@@ -132,9 +131,6 @@ func main() {
 		log.Println("排他ロックを取得しました")
 
 		log.Println("Starting batch process...")
-		if *dryRun {
-			log.Println("Running in dry-run mode")
-		}
 
 		// 取得モードを決定
 		var fetchMode *usecase.FetchModeOption
@@ -150,7 +146,7 @@ func main() {
 			log.Println("Forced mode: 過去記事取得")
 		}
 
-		if err := runBatchProcess(cfg, db, *dryRun, fetchMode); err != nil {
+		if err := runBatchProcess(cfg, db, fetchMode); err != nil {
 			log.Fatalf("Batch process failed: %v", err)
 		}
 
@@ -163,13 +159,12 @@ func main() {
 		fmt.Println("  -run-batch         Run the batch process")
 		fmt.Println("  -fetch-new         Force fetch new articles mode (use with -run-batch)")
 		fmt.Println("  -fetch-historical  Force fetch historical articles mode (use with -run-batch)")
-		fmt.Println("  -dry-run           Run batch in dry-run mode (use with -run-batch)")
 		os.Exit(1)
 	}
 }
 
 // runBatchProcess バッチ処理を実行
-func runBatchProcess(cfg *config.Config, db *postgres.DB, dryRun bool, fetchMode *usecase.FetchModeOption) error {
+func runBatchProcess(cfg *config.Config, db *postgres.DB, fetchMode *usecase.FetchModeOption) error {
 	log.Println("===========================================")
 	log.Println("  TeckBook Compass Daily Batch")
 	log.Printf("  開始時刻: %s\n", time.Now().Format("2006-01-02 15:04:05"))
