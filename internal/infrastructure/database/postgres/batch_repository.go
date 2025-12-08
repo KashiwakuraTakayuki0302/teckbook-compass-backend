@@ -409,6 +409,58 @@ func joinStrings(strs []string, sep string) string {
 	return result
 }
 
+// GetBooksWithoutAmazonURLByScore スコアが高い順にamazon_urlがない書籍を取得
+func (r *BatchRepositoryImpl) GetBooksWithoutAmazonURLByScore(ctx context.Context, limit int) ([]*repository.BookForAmazonUpdate, error) {
+	query := `
+		SELECT b.id, b.isbn10, b.title, COALESCE(SUM(bsd.score), 0) as total_score
+		FROM books b
+		LEFT JOIN book_scores_daily bsd ON b.id = bsd.book_id
+		WHERE b.amazon_url IS NULL OR b.amazon_url = ''
+		GROUP BY b.id, b.isbn10, b.title
+		ORDER BY total_score DESC
+		LIMIT $1
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get books without amazon url: %w", err)
+	}
+	defer rows.Close()
+
+	var books []*repository.BookForAmazonUpdate
+	for rows.Next() {
+		var book repository.BookForAmazonUpdate
+		var isbn10 sql.NullString
+		if err := rows.Scan(&book.ID, &isbn10, &book.Title, &book.Score); err != nil {
+			return nil, fmt.Errorf("failed to scan book: %w", err)
+		}
+		if isbn10.Valid {
+			book.ISBN10 = &isbn10.String
+		}
+		books = append(books, &book)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate books: %w", err)
+	}
+
+	return books, nil
+}
+
+// UpdateBookAmazonURL 書籍のAmazon URLを更新
+func (r *BatchRepositoryImpl) UpdateBookAmazonURL(ctx context.Context, bookID string, amazonURL string) error {
+	query := `
+		UPDATE books
+		SET amazon_url = $2, updated_at = NOW()
+		WHERE id = $1
+	`
+	_, err := r.db.ExecContext(ctx, query, bookID, amazonURL)
+	if err != nil {
+		return fmt.Errorf("failed to update book amazon url: %w", err)
+	}
+	return nil
+}
+
 // convertISBN13to10 ISBN-13をISBN-10に変換
 // 978で始まるISBN-13のみ変換可能（979で始まるものはISBN-10に対応がない）
 func convertISBN13to10(isbn13 string) *string {

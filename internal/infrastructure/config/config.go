@@ -146,13 +146,16 @@ func newRakutenConfig() RakutenConfig {
 
 // newAmazonConfig Amazon Product Advertising API設定を初期化
 func newAmazonConfig() AmazonConfig {
+	// AMAZON_ENABLED環境変数で有効/無効を制御
+	enabled := os.Getenv("AMAZON_ENABLED") == "true"
+
 	return AmazonConfig{
 		AccessKey:  os.Getenv("AMAZON_ACCESS_KEY"),
 		SecretKey:  os.Getenv("AMAZON_SECRET_KEY"),
 		PartnerTag: os.Getenv("AMAZON_PARTNER_TAG"),
 		Region:     "us-west-2",
 		BaseURL:    "webservices.amazon.co.jp",
-		Enabled:    false, // 後で追加するため、デフォルトは無効
+		Enabled:    enabled,
 	}
 }
 
