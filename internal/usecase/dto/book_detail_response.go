@@ -5,7 +5,7 @@ type BookDetailResponse struct {
 	BookID               string                  `json:"bookId"`
 	Title                string                  `json:"title"`
 	Author               string                  `json:"author"`
-	PublishedDate        string                  `json:"publishedDate"`
+	PublishedDate        *string                 `json:"publishedDate,omitempty"`
 	Price                int                     `json:"price"`
 	ISBN                 string                  `json:"isbn"`
 	BookImage            string                  `json:"bookImage"`

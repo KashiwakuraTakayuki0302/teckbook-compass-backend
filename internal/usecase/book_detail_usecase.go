@@ -43,11 +43,10 @@ func (uc *BookDetailUsecase) GetBookDetail(ctx context.Context, bookID string) (
 		})
 	}
 
-	return &dto.BookDetailResponse{
+	response := &dto.BookDetailResponse{
 		BookID:        bookDetail.BookID,
 		Title:         bookDetail.Title,
 		Author:        bookDetail.Author,
-		PublishedDate: bookDetail.PublishedDate.Format("2006-01-02"),
 		Price:         bookDetail.Price,
 		ISBN:          bookDetail.ISBN,
 		BookImage:     bookDetail.BookImage,
@@ -62,5 +61,13 @@ func (uc *BookDetailUsecase) GetBookDetail(ctx context.Context, bookID string) (
 			Amazon:  bookDetail.PurchaseLinks.Amazon,
 			Rakuten: bookDetail.PurchaseLinks.Rakuten,
 		},
-	}, nil
+	}
+
+	// PublishedDateがnilでない場合のみ設定
+	if bookDetail.PublishedDate != nil {
+		publishedDate := bookDetail.PublishedDate.Format("2006-01-02")
+		response.PublishedDate = &publishedDate
+	}
+
+	return response, nil
 }
