@@ -66,10 +66,12 @@ func (rb *RakutenBook) ToBook() *Book {
 	}
 
 	// 出版日をパース
-	var publishedAt time.Time
+	var publishedAt *time.Time
 	if rb.SalesDate != "" {
 		// "2024年01月01日" 形式をパース
-		publishedAt, _ = parseJapaneseDate(rb.SalesDate)
+		if t, err := parseJapaneseDate(rb.SalesDate); err == nil {
+			publishedAt = &t
+		}
 	}
 
 	return &Book{

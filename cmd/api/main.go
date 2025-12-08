@@ -5,6 +5,7 @@ import (
 	"log"
 	"teckbook-compass-backend/internal/infrastructure/config"
 	"teckbook-compass-backend/internal/infrastructure/database/mock"
+	"teckbook-compass-backend/internal/infrastructure/database/postgres"
 	"teckbook-compass-backend/internal/interface/handler"
 	"teckbook-compass-backend/internal/interface/router"
 	"teckbook-compass-backend/internal/usecase"
@@ -14,9 +15,16 @@ func main() {
 	// 設定の初期化
 	cfg := config.NewConfig()
 
-	// リポジトリの初期化（モック）
-	categoryRepo := mock.NewCategoryRepositoryMock()
-	bookRepo := mock.NewBookRepositoryMock()
+	// データベース接続
+	db, err := postgres.NewConnection(&cfg.Database)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	// リポジトリの初期化
+	categoryRepo := mock.NewCategoryRepositoryMock() // カテゴリはまだモック
+	bookRepo := postgres.NewBookRepository(db.DB)    // 書籍はPostgreSQL
 
 	// ユースケースの初期化
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, bookRepo)

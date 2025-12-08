@@ -7,7 +7,7 @@ type BookDetail struct {
 	BookID               string               // 書籍ID（ISBN形式）
 	Title                string               // 書籍タイトル
 	Author               string               // 著者名
-	PublishedDate        time.Time            // 出版日
+	PublishedDate        *time.Time           // 出版日（NULLの場合はnil）
 	Price                int                  // 価格
 	ISBN                 string               // ISBN
 	BookImage            string               // 書籍画像URL

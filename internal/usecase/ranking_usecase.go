@@ -29,20 +29,25 @@ func (uc *RankingUsecase) GetRankings(ctx context.Context, rangeType string, lim
 	// エンティティをDTOに変換
 	items := make([]dto.RankedBookItem, 0, len(books))
 	for _, book := range books {
-		items = append(items, dto.RankedBookItem{
-			Rank:          book.Rank,
-			BookID:        book.BookID,
-			Title:         book.Title,
-			Author:        book.Author,
-			Rating:        book.Rating,
-			ReviewCount:   book.ReviewCount,
-			PublishedAt:   book.PublishedAt.Format("2006-01-02"),
-			Thumbnail:     book.Thumbnail,
-			Tags:          book.Tags,
-			QiitaMentions: book.QiitaMentions,
-			AmazonURL:     book.AmazonURL,
-			RakutenURL:    book.RakutenURL,
-		})
+		item := dto.RankedBookItem{
+			Rank:         book.Rank,
+			BookID:       book.BookID,
+			Title:        book.Title,
+			Author:       book.Author,
+			Rating:       book.Rating,
+			ReviewCount:  book.ReviewCount,
+			Thumbnail:    book.Thumbnail,
+			Tags:         book.Tags,
+			ArticleCount: book.ArticleCount,
+			AmazonURL:    book.AmazonURL,
+			RakutenURL:   book.RakutenURL,
+		}
+		// PublishedAtがnilでない場合のみ設定
+		if book.PublishedAt != nil {
+			publishedAt := book.PublishedAt.Format("2006-01-02")
+			item.PublishedAt = &publishedAt
+		}
+		items = append(items, item)
 	}
 
 	return &dto.RankingResponse{

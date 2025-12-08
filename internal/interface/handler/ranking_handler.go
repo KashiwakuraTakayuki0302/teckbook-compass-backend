@@ -27,7 +27,7 @@ func NewRankingHandler(rankingUsecase *usecase.RankingUsecase) *RankingHandler {
 // @Accept json
 // @Produce json
 // @Param range query string false "ランキング期間 (all, monthly, yearly)" default(all)
-// @Param limit query int false "取得件数" default(5) minimum(1) maximum(100)
+// @Param limit query int false "取得件数（指定なしは全件）" minimum(1) maximum(100)
 // @Param offset query int false "オフセット" default(0) minimum(0)
 // @Param category query string false "カテゴリID"
 // @Success 200 {object} dto.RankingResponse
@@ -37,7 +37,7 @@ func NewRankingHandler(rankingUsecase *usecase.RankingUsecase) *RankingHandler {
 func (h *RankingHandler) GetRankings(c *gin.Context) {
 	// クエリパラメータの取得とデフォルト値設定
 	rangeType := c.DefaultQuery("range", "all")
-	limitStr := c.DefaultQuery("limit", "5")
+	limitStr := c.Query("limit") // デフォルト値なし（指定なしは全件）
 	offsetStr := c.DefaultQuery("offset", "0")
 	categoryID := c.Query("category")
 
@@ -47,11 +47,17 @@ func (h *RankingHandler) GetRankings(c *gin.Context) {
 		return
 	}
 
-	// バリデーション: limit
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit < 1 || limit > 100 {
-		response.Error(c, 400, "limit パラメータは 1 から 100 の整数である必要があります")
-		return
+	// バリデーション: limit（指定がなければ0=全件取得）
+	var limit int
+	var err error
+	if limitStr == "" {
+		limit = 0 // 全件取得
+	} else {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil || limit < 1 || limit > 100 {
+			response.Error(c, 400, "limit パラメータは 1 から 100 の整数である必要があります")
+			return
+		}
 	}
 
 	// バリデーション: offset
