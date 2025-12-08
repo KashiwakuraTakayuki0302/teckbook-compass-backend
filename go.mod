@@ -18,6 +18,9 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.28.0 // indirect
+	github.com/goark/errs v1.3.2 // indirect
+	github.com/goark/fetch v0.4.2 // indirect
+	github.com/goark/pa-api v0.14.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect

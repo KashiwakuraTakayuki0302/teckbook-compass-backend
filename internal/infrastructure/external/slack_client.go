@@ -151,6 +151,54 @@ func (c *SlackClient) SendLogf(format string, args ...interface{}) error {
 	return nil
 }
 
+// SendAmazonBatchStartMessage Amazon URL取得バッチ開始メッセージを送信
+func (c *SlackClient) SendAmazonBatchStartMessage(targetCount int) error {
+	if !c.IsEnabled() {
+		return nil
+	}
+
+	message := fmt.Sprintf("🛒 *Amazon URL取得バッチ開始*\n処理対象: *%d件*\n開始時刻: %s",
+		targetCount, time.Now().Format("2006-01-02 15:04:05"))
+
+	return c.sendWebhook(SlackMessage{Text: message})
+}
+
+// SendAmazonBatchResultMessage Amazon URL取得バッチ結果メッセージを送信
+func (c *SlackClient) SendAmazonBatchResultMessage(processedBooks, updatedBooks, notFoundBooks, errors int, duration time.Duration) error {
+	if !c.IsEnabled() {
+		return nil
+	}
+
+	// 結果の絵文字と色
+	emoji := "✅"
+	color := "good"
+	if errors > 0 {
+		emoji = "⚠️"
+		color = "warning"
+	}
+
+	text := fmt.Sprintf("%s *Amazon URL取得バッチ完了*", emoji)
+
+	resultText := fmt.Sprintf(
+		"• 処理した書籍数: %d\n• 更新した書籍数: %d\n• 未発見書籍数: %d\n• エラー数: %d\n• 処理時間: %v",
+		processedBooks, updatedBooks, notFoundBooks, errors, duration.Round(time.Second),
+	)
+
+	attachments := []SlackAttachment{
+		{
+			Color:  color,
+			Title:  "処理結果",
+			Text:   resultText,
+			Footer: fmt.Sprintf("終了時刻: %s", time.Now().Format("2006-01-02 15:04:05")),
+		},
+	}
+
+	return c.sendWebhook(SlackMessage{
+		Text:        text,
+		Attachments: attachments,
+	})
+}
+
 // sendWebhook Webhookでメッセージを送信
 func (c *SlackClient) sendWebhook(msg SlackMessage) error {
 	body, err := json.Marshal(msg)

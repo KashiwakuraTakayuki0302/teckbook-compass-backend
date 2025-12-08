@@ -38,6 +38,20 @@ type BatchRepository interface {
 
 	// ErrorLog関連
 	SaveErrorLog(ctx context.Context, log *ErrorLog) error
+
+	// Amazon API用
+	// GetBooksWithoutAmazonURLByScore スコアが高い順にamazon_urlがない書籍を取得
+	GetBooksWithoutAmazonURLByScore(ctx context.Context, limit int) ([]*BookForAmazonUpdate, error)
+	// UpdateBookAmazonURL 書籍のAmazon URLを更新
+	UpdateBookAmazonURL(ctx context.Context, bookID string, amazonURL string) error
+}
+
+// BookForAmazonUpdate Amazon URL更新用の書籍情報
+type BookForAmazonUpdate struct {
+	ID     string  // ISBN-13
+	ISBN10 *string // ISBN-10
+	Title  string
+	Score  float64
 }
 
 // ErrorLog エラーログ

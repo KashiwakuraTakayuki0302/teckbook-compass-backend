@@ -80,6 +80,8 @@ func main() {
 	runBatch := flag.Bool("run-batch", false, "Run the batch process to fetch and process articles")
 	fetchNew := flag.Bool("fetch-new", false, "Force fetch new articles mode (use with -run-batch)")
 	fetchHistorical := flag.Bool("fetch-historical", false, "Force fetch historical articles mode (use with -run-batch)")
+	runAmazonBatch := flag.Bool("run-amazon-batch", false, "Run Amazon URL fetch batch")
+	amazonBatchLimit := flag.Int("amazon-limit", 50, "Number of books to process in Amazon batch (default: 50)")
 
 	flag.Parse()
 
@@ -150,6 +152,24 @@ func main() {
 			log.Fatalf("Batch process failed: %v", err)
 		}
 
+	case *runAmazonBatch:
+		// 排他制御: ロックを取得
+		lock, err := AcquireLock()
+		if err != nil {
+			slackClient := external.NewSlackClient(cfg.Slack)
+			if slackClient.IsEnabled() {
+				slackClient.SendError("Amazon URL取得バッチ起動失敗", err.Error())
+			}
+			log.Fatalf("ロック取得失敗: %v", err)
+		}
+		defer lock.Release()
+		log.Println("排他ロックを取得しました")
+
+		log.Println("Starting Amazon URL fetch batch...")
+		if err := runAmazonBatchProcess(cfg, db, *amazonBatchLimit); err != nil {
+			log.Fatalf("Amazon batch process failed: %v", err)
+		}
+
 	default:
 		flag.Usage()
 		fmt.Println("\nAvailable commands:")
@@ -159,8 +179,78 @@ func main() {
 		fmt.Println("  -run-batch         Run the batch process")
 		fmt.Println("  -fetch-new         Force fetch new articles mode (use with -run-batch)")
 		fmt.Println("  -fetch-historical  Force fetch historical articles mode (use with -run-batch)")
+		fmt.Println("  -run-amazon-batch  Run Amazon URL fetch batch")
+		fmt.Println("  -amazon-limit      Number of books to process in Amazon batch (default: 50)")
 		os.Exit(1)
 	}
+}
+
+// runAmazonBatchProcess Amazon URL取得バッチ処理を実行
+func runAmazonBatchProcess(cfg *config.Config, db *postgres.DB, limit int) error {
+	log.Println("===========================================")
+	log.Println("  TeckBook Compass Amazon URL Fetch Batch")
+	log.Printf("  開始時刻: %s\n", time.Now().Format("2006-01-02 15:04:05"))
+	log.Printf("  処理上限: %d 件\n", limit)
+	log.Println("===========================================")
+
+	// コンテキストを作成（タイムアウト付き）
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	defer cancel()
+
+	// リポジトリを初期化
+	batchRepo := postgres.NewBatchRepository(db.DB)
+
+	// 外部APIクライアントを初期化
+	amazonClient := external.NewAmazonClient(cfg.Amazon)
+	slackClient := external.NewSlackClient(cfg.Slack)
+
+	if !amazonClient.IsEnabled() {
+		log.Println("Amazon API is disabled. Please set AMAZON_ENABLED=true in your environment.")
+		return fmt.Errorf("amazon api is disabled")
+	}
+
+	if slackClient.IsEnabled() {
+		log.Println("Slack通知: 有効")
+	} else {
+		log.Println("Slack通知: 無効")
+	}
+
+	// ユースケースを初期化
+	amazonBatchUsecase := usecase.NewAmazonBatchUsecase(batchRepo, amazonClient, slackClient)
+
+	// バッチ処理を実行
+	result, err := amazonBatchUsecase.Run(ctx, limit)
+	if err != nil {
+		// エラーが発生しても結果は出力する
+		if result != nil {
+			log.Println("===========================================")
+			log.Println("  Amazon URL取得バッチ結果 (エラーで終了)")
+			log.Println("===========================================")
+			log.Printf("  処理した書籍数:   %d\n", result.ProcessedBooks)
+			log.Printf("  更新した書籍数:   %d\n", result.UpdatedBooks)
+			log.Printf("  未発見書籍数:     %d\n", result.NotFoundBooks)
+			log.Printf("  エラー数:         %d\n", result.Errors)
+			log.Printf("  エラー内容:       %s\n", result.ErrorMessage)
+			log.Printf("  処理時間:         %v\n", result.EndTime.Sub(result.StartTime))
+			log.Println("===========================================")
+		}
+		return err
+	}
+
+	// 結果を出力
+	log.Println("===========================================")
+	log.Println("  Amazon URL取得バッチ結果")
+	log.Println("===========================================")
+	log.Printf("  処理した書籍数:   %d\n", result.ProcessedBooks)
+	log.Printf("  更新した書籍数:   %d\n", result.UpdatedBooks)
+	log.Printf("  未発見書籍数:     %d\n", result.NotFoundBooks)
+	log.Printf("  エラー数:         %d\n", result.Errors)
+	log.Printf("  処理時間:         %v\n", result.EndTime.Sub(result.StartTime))
+	log.Println("===========================================")
+	log.Printf("  終了時刻: %s\n", time.Now().Format("2006-01-02 15:04:05"))
+	log.Println("===========================================")
+
+	return nil
 }
 
 // runBatchProcess バッチ処理を実行
