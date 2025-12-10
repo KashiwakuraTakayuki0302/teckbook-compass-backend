@@ -9,9 +9,20 @@ import (
 )
 
 func init() {
-	// .envファイルを読み込み（存在しない場合はスキップ）
-	if err := godotenv.Load(); err != nil {
-		log.Println("Info: .env file not found, using environment variables")
+	// .envファイルを読み込み（存在する場合のみ）
+	if _, err := os.Stat(".env"); err == nil {
+		// .envファイルが存在する場合のみ読み込み
+		if err := godotenv.Load(); err != nil {
+			log.Printf("警告: .envファイルの読み込みに失敗しました: %v", err)
+		} else {
+			log.Println("Info: .envファイルを読み込みました")
+		}
+	} else if os.IsNotExist(err) {
+		// .envファイルが存在しない場合（本番環境など）
+		log.Println("Info: .envファイルが見つかりません。環境変数を使用します")
+	} else {
+		// その他のエラー
+		log.Printf("警告: .envファイルの確認中にエラーが発生しました: %v", err)
 	}
 }
 

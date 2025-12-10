@@ -6,6 +6,7 @@ import (
 	"teckbook-compass-backend/internal/infrastructure/config"
 	"teckbook-compass-backend/internal/infrastructure/database/mock"
 	"teckbook-compass-backend/internal/infrastructure/database/postgres"
+	"teckbook-compass-backend/internal/infrastructure/secrets"
 	"teckbook-compass-backend/internal/interface/handler"
 	"teckbook-compass-backend/internal/interface/router"
 	"teckbook-compass-backend/internal/usecase"
@@ -14,6 +15,12 @@ import (
 func main() {
 	// 設定の初期化
 	cfg := config.NewConfig()
+
+	// Secrets Managerからusername/passwordを取得
+	if err := secrets.LoadDatabaseCredentials(cfg); err != nil {
+		log.Printf("警告: Secrets Managerからの認証情報取得に失敗しました（環境変数を使用）: %v", err)
+		// エラーが発生しても環境変数の値で続行
+	}
 
 	// データベース接続
 	db, err := postgres.NewConnection(&cfg.Database)
