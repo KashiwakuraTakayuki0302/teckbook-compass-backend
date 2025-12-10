@@ -22,6 +22,8 @@ vendor/
 /dist/
 /build/
 /batch
+bootstrap
+function.zip
 
 # IDE specific files
 .idea/
