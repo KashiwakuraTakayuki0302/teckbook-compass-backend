@@ -10,7 +10,7 @@ TechBook Compassは、Qiitaのトレンド情報とAmazonの書籍データを�
 
 - 📚 カテゴリ別技術書の取得
 - 🔥 トレンドタグ付きカテゴリ表示（急上昇中、人気上昇、注目）
-- 📊 技術書ランキング（全体、月間、日間、年間）※今後実装予定
+- 📊 技術書ランキング（全体、月間、年間）
 - 🔍 技術書のキーワード検索 ※今後実装予定
 - ⚙️ 日次バッチ処理（Qiita記事収集・書籍情報取得・スコアリング）
 
@@ -168,21 +168,31 @@ teckbook-compass-backend/
 │   ├── openapi.yaml               # OpenAPI 3.0定義
 │   └── README.md                  # API仕様の使い方
 ├── cmd/
-│   └── api/
-│       └── main.go                 # エントリーポイント
+│   ├── api/
+│   │   └── main.go                 # APIサーバーエントリーポイント
+│   └── batch/
+│       └── main.go                 # バッチ処理エントリーポイント
 ├── internal/
 │   ├── domain/                     # ドメイン層
 │   │   ├── entity/                # エンティティ
 │   │   └── repository/            # リポジトリIF
 │   ├── usecase/                    # ユースケース層
-│   │   ├── category_usecase.go
+│   │   ├── category_usecase.go    # カテゴリ関連ユースケース
+│   │   ├── ranking_usecase.go     # ランキング関連ユースケース
+│   │   ├── book_detail_usecase.go # 書籍詳細関連ユースケース
+│   │   ├── batch_usecase.go       # バッチ処理全般ユースケース
+│   │   ├── amazon_batch_usecase.go # Amazon連携バッチユースケース
 │   │   └── dto/                   # レスポンスDTO
 │   ├── infrastructure/             # インフラ層
-│   │   ├── database/mock/         # モックリポジトリ
-│   │   └── config/                # 設定管理
+│   │   ├── config/                # 設定管理
+│   │   ├── database/              # データベース接続
+│   │   ├── external/              # 外部APIクライアント (Amazon, RSS等)
+│   │   ├── extractor/             # HTML解析・データ抽出
+│   │   └── secrets/               # AWS Secrets Manager連携
 │   └── interface/                  # インターフェース層
 │       ├── handler/               # HTTPハンドラ
 │       └── router/                # ルーター
+├── migrations/                     # データベースマイグレーションファイル
 ├── pkg/                            # 共有ユーティリティ
 │   └── response/                  # レスポンスヘルパー
 ├── docs/                           # ドキュメント
@@ -236,10 +246,10 @@ go test ./internal/usecase/... -v
 
 ### 今後の予定 📋
 
-- [ ] Amazon API統合バッチジョブ
-- [ ] 技術書ランキングAPI
+- [x] Amazon API統合バッチジョブ
+- [x] 技術書ランキングAPI
 - [ ] キーワード検索API
-- [ ] 技術書詳細情報API
+- [x] 技術書詳細情報API
 - [ ] キャッシュ層（Redis）
 - [ ] ロギング・モニタリング
 - [ ] CI/CDパイプライン
