@@ -16,7 +16,7 @@ import (
 	"teckbook-compass-backend/internal/usecase"
 )
 
-var ginLambda *ginadapter.GinLambda
+var ginLambda *ginadapter.GinLambdaV2
 
 // 🔹 cold start 時に1回だけ実行される
 func init() {
@@ -51,12 +51,12 @@ func init() {
 	// Router
 	r := router.SetupRouter(categoryHandler, rankingHandler, bookDetailHandler)
 
-	// Lambda Adapter
-	ginLambda = ginadapter.New(r)
+	// Lambda Adapter (API Gateway v2 HTTP API用)
+	ginLambda = ginadapter.NewV2(r)
 }
 
-// 🔹 API Gateway → Lambda → Gin
-func lambdaHandler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+// 🔹 API Gateway v2 (HTTP API) → Lambda → Gin
+func lambdaHandler(req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	return ginLambda.Proxy(req)
 }
 
