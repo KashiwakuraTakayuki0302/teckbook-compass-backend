@@ -1,8 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
+
 	"teckbook-compass-backend/internal/infrastructure/config"
 	"teckbook-compass-backend/internal/infrastructure/database/mock"
 	"teckbook-compass-backend/internal/infrastructure/database/postgres"
@@ -12,44 +16,50 @@ import (
 	"teckbook-compass-backend/internal/usecase"
 )
 
-func main() {
+var ginLambda *ginadapter.GinLambda
+
+// 🔹 cold start 時に1回だけ実行される
+func init() {
 	// 設定の初期化
 	cfg := config.NewConfig()
 
-	// Secrets Managerからusername/passwordを取得
+	// Secrets Manager
 	if err := secrets.LoadDatabaseCredentials(cfg); err != nil {
-		log.Printf("警告: Secrets Managerからの認証情報取得に失敗しました（環境変数を使用）: %v", err)
-		// エラーが発生しても環境変数の値で続行
+		log.Printf("Secrets Manager warning: %v", err)
 	}
 
-	// データベース接続
+	// DB接続（使い回される）
 	db, err := postgres.NewConnection(&cfg.Database)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect DB: %v", err)
 	}
-	defer db.Close()
 
-	// リポジトリの初期化
-	categoryRepo := mock.NewCategoryRepositoryMock() // カテゴリはまだモック
-	bookRepo := postgres.NewBookRepository(db.DB)    // 書籍はPostgreSQL
+	// Repository
+	categoryRepo := mock.NewCategoryRepositoryMock()
+	bookRepo := postgres.NewBookRepository(db.DB)
 
-	// ユースケースの初期化
+	// Usecase
 	categoryUsecase := usecase.NewCategoryUsecase(categoryRepo, bookRepo)
 	rankingUsecase := usecase.NewRankingUsecase(bookRepo)
 	bookDetailUsecase := usecase.NewBookDetailUsecase(bookRepo)
 
-	// ハンドラの初期化
+	// Handler
 	categoryHandler := handler.NewCategoryHandler(categoryUsecase)
 	rankingHandler := handler.NewRankingHandler(rankingUsecase)
 	bookDetailHandler := handler.NewBookDetailHandler(bookDetailUsecase)
 
-	// ルーターのセットアップ
+	// Router
 	r := router.SetupRouter(categoryHandler, rankingHandler, bookDetailHandler)
 
-	// サーバー起動
-	addr := fmt.Sprintf(":%s", cfg.ServerPort)
-	log.Printf("Server starting on %s", addr)
-	if err := r.Run(addr); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	// Lambda Adapter
+	ginLambda = ginadapter.New(r)
+}
+
+// 🔹 API Gateway → Lambda → Gin
+func lambdaHandler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return ginLambda.Proxy(req)
+}
+
+func main() {
+	lambda.Start(lambdaHandler)
 }
