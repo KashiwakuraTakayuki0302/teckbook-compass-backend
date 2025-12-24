@@ -52,10 +52,13 @@ type BatchRepository interface {
 	GetAllCategories(ctx context.Context) ([]*CategoryInfo, error)
 	// SaveBookCategory 書籍のカテゴリを保存
 	SaveBookCategory(ctx context.Context, bookID string, categoryID string) error
+<<<<<<< HEAD
 
 	// Category関連
 	// UpdateCategoryScores 全カテゴリのスコアを更新（book_categoriesに紐づくbook_scores_dailyの合計）
 	UpdateCategoryScores(ctx context.Context) error
+=======
+>>>>>>> 7290383 (CPG-31 技術書カテゴライズバッチ実装)
 }
 
 // BookForAmazonUpdate Amazon URL更新用の書籍情報
