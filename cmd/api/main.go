@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/gin-gonic/gin"
 
 	"teckbook-compass-backend/internal/infrastructure/config"
 	"teckbook-compass-backend/internal/infrastructure/database/mock"
@@ -16,12 +18,17 @@ import (
 	"teckbook-compass-backend/internal/usecase"
 )
 
-var ginLambda *ginadapter.GinLambdaV2
+var (
+	ginLambda   *ginadapter.GinLambdaV2
+	routerEngine *gin.Engine
+	appConfig   *config.Config
+)
 
 // 🔹 cold start 時に1回だけ実行される
 func init() {
 	// 設定の初期化
-	cfg := config.NewConfig()
+	appConfig = config.NewConfig()
+	cfg := appConfig
 
 	// Secrets Manager
 	if err := secrets.LoadDatabaseCredentials(cfg); err != nil {
@@ -49,10 +56,10 @@ func init() {
 	bookDetailHandler := handler.NewBookDetailHandler(bookDetailUsecase)
 
 	// Router
-	r := router.SetupRouter(categoryHandler, rankingHandler, bookDetailHandler)
+	routerEngine = router.SetupRouter(categoryHandler, rankingHandler, bookDetailHandler)
 
 	// Lambda Adapter (API Gateway v2 HTTP API用)
-	ginLambda = ginadapter.NewV2(r)
+	ginLambda = ginadapter.NewV2(routerEngine)
 }
 
 // 🔹 API Gateway v2 (HTTP API) → Lambda → Gin
@@ -61,5 +68,12 @@ func lambdaHandler(req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPR
 }
 
 func main() {
-	lambda.Start(lambdaHandler)
+	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
+		lambda.Start(lambdaHandler)
+	} else {
+		log.Printf("Starting server on port %s", appConfig.ServerPort)
+		if err := routerEngine.Run(":" + appConfig.ServerPort); err != nil {
+			log.Fatalf("Failed to run server: %v", err)
+		}
+	}
 }
