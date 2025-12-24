@@ -16,9 +16,9 @@ import (
 
 // LambdaEvent EventBridgeから受け取るイベント構造体
 type LambdaEvent struct {
-	Type  string `json:"type"`  // バッチの種類 ("article" or "amazon")
+	Type  string `json:"type"`  // バッチの種類 ("article", "amazon", "categorize")
 	Mode  string `json:"mode"`  // 取得モード ("new", "historical", "auto") - articleバッチ用
-	Limit int    `json:"limit"` // 処理上限 - amazonバッチ用
+	Limit int    `json:"limit"` // 処理上限 - amazonバッチ用、categorizeバッチ用
 }
 
 // LambdaResponse Lambda用のレスポンス構造体

@@ -29,13 +29,14 @@ const (
 type BatchType string
 
 const (
-	BatchTypeArticle BatchType = "article" // 記事取得バッチ
-	BatchTypeAmazon  BatchType = "amazon"  // Amazon URL取得バッチ
+	BatchTypeArticle    BatchType = "article"    // 記事取得バッチ
+	BatchTypeAmazon     BatchType = "amazon"     // Amazon URL取得バッチ
+	BatchTypeCategorize BatchType = "categorize" // カテゴライズバッチ
 )
 
 // IsValid バッチタイプが有効かどうかを判定
 func (b BatchType) IsValid() bool {
-	return b == BatchTypeArticle || b == BatchTypeAmazon
+	return b == BatchTypeArticle || b == BatchTypeAmazon || b == BatchTypeCategorize
 }
 
 // String バッチタイプの日本語名を返す
@@ -45,6 +46,8 @@ func (b BatchType) String() string {
 		return "記事取得バッチ"
 	case BatchTypeAmazon:
 		return "Amazon URL取得バッチ"
+	case BatchTypeCategorize:
+		return "カテゴライズバッチ"
 	default:
 		return string(b)
 	}
@@ -62,7 +65,7 @@ func NewBatchParamsFromEnv() BatchParams {
 	return BatchParams{
 		Type:  BatchType(os.Getenv("BATCH_TYPE")),
 		Mode:  os.Getenv("FETCH_MODE"),
-		Limit: getAmazonLimitFromEnv(),
+		Limit: 0, // 各バッチタイプで適切なデフォルト値を使用
 	}
 }
 
@@ -141,7 +144,7 @@ func (a *App) notifyError(title, message string) {
 func (a *App) ExecuteBatch(params BatchParams) BatchResult {
 	// バッチタイプのバリデーション
 	if !params.Type.IsValid() {
-		errMsg := fmt.Sprintf("不明なバッチタイプ: %s (使用可能: article, amazon)", params.Type)
+		errMsg := fmt.Sprintf("不明なバッチタイプ: %s (使用可能: article, amazon, categorize)", params.Type)
 		log.Println(errMsg)
 		return BatchResult{Success: false, Message: errMsg}
 	}
@@ -159,6 +162,12 @@ func (a *App) ExecuteBatch(params BatchParams) BatchResult {
 			limit = getAmazonLimitFromEnv()
 		}
 		err = runAmazonBatchProcess(a.Config, a.DB, limit)
+	case BatchTypeCategorize:
+		limit := params.Limit
+		if limit <= 0 {
+			limit = getCategorizeLimitFromEnv()
+		}
+		err = runCategorizeBatchProcess(a.Config, a.DB, limit)
 	}
 
 	if err != nil {
@@ -272,6 +281,16 @@ func getAmazonLimitFromEnv() int {
 	return 50 // デフォルト値
 }
 
+// getCategorizeLimitFromEnv 環境変数からカテゴライズ処理上限を取得
+func getCategorizeLimitFromEnv() int {
+	if limitStr := os.Getenv("CATEGORIZE_LIMIT"); limitStr != "" {
+		if limit, err := strconv.Atoi(limitStr); err == nil && limit > 0 {
+			return limit
+		}
+	}
+	return 40 // デフォルト値（一回のバッチ処理で40冊まで）
+}
+
 // getMigrationsPath マイグレーションファイルのパスを取得
 func getMigrationsPath() (string, error) {
 	if path := os.Getenv("MIGRATIONS_PATH"); path != "" {
@@ -336,6 +355,72 @@ func runBatchProcess(cfg *config.Config, db *postgres.DB, fetchMode *usecase.Fet
 	if result.NextPage > 0 {
 		log.Printf("  次回開始ページ:   %d\n", result.NextPage)
 	}
+	log.Printf("  処理時間:         %v\n", result.EndTime.Sub(result.StartTime))
+	log.Println("===========================================")
+	log.Printf("  終了時刻: %s\n", time.Now().Format("2006-01-02 15:04:05"))
+	log.Println("===========================================")
+
+	return nil
+}
+
+// runCategorizeBatchProcess カテゴライズバッチ処理を実行
+func runCategorizeBatchProcess(cfg *config.Config, db *postgres.DB, limit int) error {
+	log.Println("===========================================")
+	log.Println("  TeckBook Compass Categorize Batch")
+	log.Printf("  開始時刻: %s\n", time.Now().Format("2006-01-02 15:04:05"))
+	log.Printf("  処理上限: %d 件\n", limit)
+	log.Println("===========================================")
+
+	// コンテキストを作成（タイムアウト付き）
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	defer cancel()
+
+	// リポジトリを初期化
+	batchRepo := postgres.NewBatchRepository(db.DB)
+
+	// 外部APIクライアントを初期化
+	chatGPTClient := external.NewChatGPTClient(cfg.ChatGPT)
+	slackClient := external.NewSlackClient(cfg.Slack)
+
+	if !chatGPTClient.IsEnabled() {
+		log.Println("ChatGPT API is disabled. Please set CHATGPT_ENABLED=true and CHATGPT_API_KEY in your environment.")
+		return fmt.Errorf("chatgpt api is disabled")
+	}
+
+	if slackClient.IsEnabled() {
+		log.Println("Slack通知: 有効")
+	} else {
+		log.Println("Slack通知: 無効")
+	}
+
+	// ユースケースを初期化
+	categorizeBatchUsecase := usecase.NewCategorizeBatchUsecase(batchRepo, chatGPTClient, slackClient)
+
+	// バッチ処理を実行
+	result, err := categorizeBatchUsecase.Run(ctx, limit)
+	if err != nil {
+		// エラーが発生しても結果は出力する
+		if result != nil {
+			log.Println("===========================================")
+			log.Println("  カテゴライズバッチ結果 (エラーで終了)")
+			log.Println("===========================================")
+			log.Printf("  処理した書籍数:   %d\n", result.ProcessedBooks)
+			log.Printf("  カテゴライズ成功: %d\n", result.CategorizedBooks)
+			log.Printf("  エラー数:         %d\n", result.Errors)
+			log.Printf("  エラー内容:       %s\n", result.ErrorMessage)
+			log.Printf("  処理時間:         %v\n", result.EndTime.Sub(result.StartTime))
+			log.Println("===========================================")
+		}
+		return err
+	}
+
+	// 結果を出力
+	log.Println("===========================================")
+	log.Println("  カテゴライズバッチ結果")
+	log.Println("===========================================")
+	log.Printf("  処理した書籍数:   %d\n", result.ProcessedBooks)
+	log.Printf("  カテゴライズ成功: %d\n", result.CategorizedBooks)
+	log.Printf("  エラー数:         %d\n", result.Errors)
 	log.Printf("  処理時間:         %v\n", result.EndTime.Sub(result.StartTime))
 	log.Println("===========================================")
 	log.Printf("  終了時刻: %s\n", time.Now().Format("2006-01-02 15:04:05"))

@@ -199,6 +199,67 @@ func (c *SlackClient) SendAmazonBatchResultMessage(processedBooks, updatedBooks,
 	})
 }
 
+// SendCategorizeBatchStartMessage カテゴライズバッチ開始メッセージを送信
+func (c *SlackClient) SendCategorizeBatchStartMessage(targetCount int) error {
+	if !c.IsEnabled() {
+		return nil
+	}
+
+	message := fmt.Sprintf("🏷️ *カテゴライズバッチ開始*\n処理対象: *%d件*\n開始時刻: %s",
+		targetCount, time.Now().Format("2006-01-02 15:04:05"))
+
+	return c.sendWebhook(SlackMessage{Text: message})
+}
+
+// SendCategorizeBatchResultMessage カテゴライズバッチ結果メッセージを送信
+func (c *SlackClient) SendCategorizeBatchResultMessage(processedBooks, categorizedBooks, errors int, duration time.Duration, promptTokens, completionTokens, totalTokens int) error {
+	if !c.IsEnabled() {
+		return nil
+	}
+
+	// 結果の絵文字と色
+	emoji := "✅"
+	color := "good"
+	if errors > 0 {
+		emoji = "⚠️"
+		color = "warning"
+	}
+
+	text := fmt.Sprintf("%s *カテゴライズバッチ完了*", emoji)
+
+	resultText := fmt.Sprintf(
+		"• 処理した書籍数: %d\n• カテゴライズ成功: %d\n• エラー数: %d\n• 処理時間: %v",
+		processedBooks, categorizedBooks, errors, duration.Round(time.Second),
+	)
+
+	attachments := []SlackAttachment{
+		{
+			Color:  color,
+			Title:  "処理結果",
+			Text:   resultText,
+			Footer: fmt.Sprintf("終了時刻: %s", time.Now().Format("2006-01-02 15:04:05")),
+		},
+	}
+
+	// トークン使用量がある場合は追加
+	if totalTokens > 0 {
+		tokenText := fmt.Sprintf(
+			"• プロンプトトークン: %d\n• 完了トークン: %d\n• 合計トークン: %d",
+			promptTokens, completionTokens, totalTokens,
+		)
+		attachments = append(attachments, SlackAttachment{
+			Color: "#4A90D9",
+			Title: "🤖 ChatGPT トークン使用量",
+			Text:  tokenText,
+		})
+	}
+
+	return c.sendWebhook(SlackMessage{
+		Text:        text,
+		Attachments: attachments,
+	})
+}
+
 // sendWebhook Webhookでメッセージを送信
 func (c *SlackClient) sendWebhook(msg SlackMessage) error {
 	body, err := json.Marshal(msg)
