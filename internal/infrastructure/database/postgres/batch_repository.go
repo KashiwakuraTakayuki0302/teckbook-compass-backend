@@ -541,6 +541,30 @@ func (r *BatchRepositoryImpl) SaveBookCategory(ctx context.Context, bookID strin
 	return nil
 }
 
+// UpdateCategoryScores 全カテゴリのスコアを更新
+// book_categoriesに紐づく書籍のbook_scores_dailyスコア合計をcategories.scoreに保存
+func (r *BatchRepositoryImpl) UpdateCategoryScores(ctx context.Context) error {
+	// 各カテゴリごとにスコアを計算して更新
+	query := `
+		UPDATE categories c
+		SET score = COALESCE(
+			(
+				SELECT SUM(bsd.score)
+				FROM book_categories bc
+				INNER JOIN book_scores_daily bsd ON bc.book_id = bsd.book_id
+				WHERE bc.category_id = c.id
+			),
+			0
+		),
+		updated_at = NOW()
+	`
+	_, err := r.db.ExecContext(ctx, query)
+	if err != nil {
+		return fmt.Errorf("failed to update category scores: %w", err)
+	}
+	return nil
+}
+
 // convertISBN13to10 ISBN-13をISBN-10に変換
 // 978で始まるISBN-13のみ変換可能（979で始まるものはISBN-10に対応がない）
 func convertISBN13to10(isbn13 string) *string {
