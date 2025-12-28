@@ -542,7 +542,6 @@ func (r *BatchRepositoryImpl) SaveBookCategory(ctx context.Context, bookID strin
 	return nil
 }
 
-<<<<<<< HEAD
 // UpdateCategoryScores 全カテゴリのスコアを更新
 // book_categoriesに紐づく書籍のbook_scores_dailyスコア合計をcategories.scoreに保存
 func (r *BatchRepositoryImpl) UpdateCategoryScores(ctx context.Context) error {
@@ -567,8 +566,6 @@ func (r *BatchRepositoryImpl) UpdateCategoryScores(ctx context.Context) error {
 	return nil
 }
 
-=======
->>>>>>> 7290383 (CPG-31 技術書カテゴライズバッチ実装)
 // convertISBN13to10 ISBN-13をISBN-10に変換
 // 978で始まるISBN-13のみ変換可能（979で始まるものはISBN-10に対応がない）
 func convertISBN13to10(isbn13 string) *string {
