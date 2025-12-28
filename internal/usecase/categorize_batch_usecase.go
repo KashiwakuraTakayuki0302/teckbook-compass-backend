@@ -214,6 +214,15 @@ func (u *CategorizeBatchUsecase) Run(ctx context.Context, limit int) (*Categoriz
 		}
 	}
 
+	// カテゴリスコアを更新
+	log.Println("カテゴリスコアを更新中...")
+	if err := u.repo.UpdateCategoryScores(ctx); err != nil {
+		log.Printf("Warning: カテゴリスコア更新エラー: %v\n", err)
+		result.Errors++
+	} else {
+		log.Println("カテゴリスコアの更新が完了しました")
+	}
+
 	result.EndTime = time.Now()
 
 	log.Printf("カテゴライズバッチ完了: 処理=%d, 成功=%d, エラー=%d, トークン合計=%d (prompt=%d, completion=%d)",
