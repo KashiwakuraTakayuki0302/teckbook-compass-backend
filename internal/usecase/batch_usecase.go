@@ -180,17 +180,6 @@ func (u *BatchUsecase) Run(ctx context.Context, fetchModeOption *FetchModeOption
 	// 7. カテゴリ振り分けは記事処理時に実行済み
 	log.Println("Step 7: カテゴリ振り分けは記事処理時に完了済み")
 
-	// 7.5 カテゴリスコアを更新
-	log.Println("Step 7.5: カテゴリスコアを更新中...")
-	u.slackLog("Step 7.5: カテゴリスコアを更新中...")
-
-	if err := u.repo.UpdateCategoryScores(ctx); err != nil {
-		log.Printf("Warning: カテゴリスコア更新エラー: %v\n", err)
-		result.Errors++
-	} else {
-		log.Println("カテゴリスコアの更新が完了しました")
-	}
-
 	// 8. バッチ状態を更新
 	log.Println("Step 8: バッチ状態を更新中...")
 	u.slackLog("Step 8: バッチ状態を更新中...")
@@ -291,11 +280,10 @@ func (u *BatchUsecase) processArticle(ctx context.Context, qiitaArticle *entity.
 			if score, ok := bookScores[bookID]; ok {
 				score.AddScore(article.Likes, article.Stocks, article.PublishedAt)
 			} else {
-				// 既存のスコアを取得
-				existingScore, _ := u.repo.GetExistingBookScore(ctx, bookID)
+				// 新規の場合
 				bookScores[bookID] = &entity.BookScore{
 					BookID:       bookID,
-					Score:        existingScore,
+					Score:        0, // 修正: 既存スコアは取得せず0からスタート（DB保存時に加算されるため）
 					ArticleCount: 0,
 				}
 				bookScores[bookID].AddScore(article.Likes, article.Stocks, article.PublishedAt)
