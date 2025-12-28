@@ -129,11 +129,7 @@ LIMIT $1
 ### ローカル環境
 
 ```bash
-<<<<<<< HEAD
 # 基本的な起動（デフォルト40冊処理）
-=======
-# 基本的な起動（デフォルト5冊処理）
->>>>>>> 7290383 (CPG-31 技術書カテゴライズバッチ実装)
 BATCH_TYPE=categorize CHATGPT_ENABLED=true CHATGPT_API_KEY=sk-xxx go run ./cmd/batch/...
 
 # 処理件数を指定
@@ -156,11 +152,7 @@ CHATGPT_API_KEY=sk-xxx
 CHATGPT_ENABLED=true
 CHATGPT_MODEL=gpt-4o-mini
 
-<<<<<<< HEAD
 CATEGORIZE_LIMIT=40
-=======
-CATEGORIZE_LIMIT=5
->>>>>>> 7290383 (CPG-31 技術書カテゴライズバッチ実装)
 EOF
 
 # バッチを実行
