@@ -45,20 +45,6 @@ type CategorizeBatchResult struct {
 	TotalTokens           int
 }
 
-// カテゴリIDとコードのマッピング（DB順序に対応）
-var categoryCodeMapping = []string{
-	"ai-ml",        // 1
-	"frontend",     // 2
-	"mobile",       // 3
-	"cloud",        // 4
-	"infra-devops", // 5
-	"backend",      // 6
-	"database",     // 7
-	"security",     // 8
-	"beginner-cs",  // 9
-	"pm-business",  // 10
-}
-
 // Run カテゴライズバッチを実行
 // limit: 処理する書籍の最大数
 func (u *CategorizeBatchUsecase) Run(ctx context.Context, limit int) (*CategorizeBatchResult, error) {
