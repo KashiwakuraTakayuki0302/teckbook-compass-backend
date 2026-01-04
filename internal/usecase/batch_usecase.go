@@ -280,10 +280,11 @@ func (u *BatchUsecase) processArticle(ctx context.Context, qiitaArticle *entity.
 			if score, ok := bookScores[bookID]; ok {
 				score.AddScore(article.Likes, article.Stocks, article.PublishedAt)
 			} else {
-				// 新規の場合
+				// 既存のスコアを取得
+				existingScore, _ := u.repo.GetExistingBookScore(ctx, bookID)
 				bookScores[bookID] = &entity.BookScore{
 					BookID:       bookID,
-					Score:        0, // 修正: 既存スコアは取得せず0からスタート（DB保存時に加算されるため）
+					Score:        existingScore,
 					ArticleCount: 0,
 				}
 				bookScores[bookID].AddScore(article.Likes, article.Stocks, article.PublishedAt)
