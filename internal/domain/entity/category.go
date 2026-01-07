@@ -6,5 +6,6 @@ type Category struct {
 	Name     string  // カテゴリ名（例: "AI・機械学習"）
 	Icon     string  // アイコン識別子（例: "ai-robot"）
 	TrendTag string  // トレンドタグ（"hot", "popular", "attention"）
+	Score    float64 // カテゴリスコア（紐づく書籍のスコア合計）
 	Books    []*Book // カテゴリに属する書籍リスト
 }

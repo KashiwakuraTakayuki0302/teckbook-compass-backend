@@ -33,16 +33,16 @@ validate-api: ## OpenAPI定義をバリデーション
 
 # データベース関連コマンド
 db-test: ## データベース接続をテスト
-	go run cmd/batch/main.go -test-connection
+	go run ./cmd/batch/... -test-connection
 
 db-migrate: ## データベースマイグレーションを実行
-	go run cmd/batch/main.go -migrate-up
+	go run ./cmd/batch/... -migrate-up
 
 db-rollback: ## データベースマイグレーションをロールバック（1ステップ）
-	go run cmd/batch/main.go -migrate-down
+	go run ./cmd/batch/... -migrate-down
 
 db-rollback-all: ## データベースマイグレーションを全てロールバック
-	go run cmd/batch/main.go -migrate-down -migrate-steps=999
+	go run ./cmd/batch/... -migrate-down -migrate-steps=999
 
 clean: ## ビルド成果物を削除
 	rm -rf bin/

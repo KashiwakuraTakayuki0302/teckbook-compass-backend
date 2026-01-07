@@ -44,6 +44,18 @@ type BatchRepository interface {
 	GetBooksWithoutAmazonURLByScore(ctx context.Context, limit int) ([]*BookForAmazonUpdate, error)
 	// UpdateBookAmazonURL 書籍のAmazon URLを更新
 	UpdateBookAmazonURL(ctx context.Context, bookID string, amazonURL string) error
+
+	// カテゴライズバッチ用
+	// GetBooksWithoutCategory カテゴリが未設定の書籍を取得（スコア順）
+	GetBooksWithoutCategory(ctx context.Context, limit int) ([]*BookForCategorize, error)
+	// GetAllCategories 全カテゴリを取得
+	GetAllCategories(ctx context.Context) ([]*CategoryInfo, error)
+	// SaveBookCategory 書籍のカテゴリを保存
+	SaveBookCategory(ctx context.Context, bookID string, categoryID string) error
+
+	// Category関連
+	// UpdateCategoryScores 全カテゴリのスコアを更新（book_categoriesに紐づくbook_scores_dailyの合計）
+	UpdateCategoryScores(ctx context.Context) error
 }
 
 // BookForAmazonUpdate Amazon URL更新用の書籍情報
@@ -52,6 +64,19 @@ type BookForAmazonUpdate struct {
 	ISBN10 *string // ISBN-10
 	Title  string
 	Score  float64
+}
+
+// BookForCategorize カテゴライズ用の書籍情報
+type BookForCategorize struct {
+	ID       string // ISBN-13
+	Title    string
+	Overview string
+}
+
+// CategoryInfo カテゴリ情報
+type CategoryInfo struct {
+	ID   string // カテゴリID（例: "ai-ml"）
+	Name string // カテゴリ名（例: "AI / 機械学習"）
 }
 
 // ErrorLog エラーログ

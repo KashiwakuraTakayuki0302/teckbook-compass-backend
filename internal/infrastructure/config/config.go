@@ -35,6 +35,15 @@ type Config struct {
 	Rakuten    RakutenConfig
 	Amazon     AmazonConfig
 	Slack      SlackConfig
+	ChatGPT    ChatGPTConfig
+}
+
+// ChatGPTConfig ChatGPT API設定
+type ChatGPTConfig struct {
+	APIKey  string
+	BaseURL string
+	Model   string
+	Enabled bool
 }
 
 // SlackConfig Slack通知設定
@@ -107,6 +116,30 @@ func NewConfig() *Config {
 		Rakuten:    newRakutenConfig(),
 		Amazon:     newAmazonConfig(),
 		Slack:      newSlackConfig(),
+		ChatGPT:    newChatGPTConfig(),
+	}
+}
+
+// newChatGPTConfig ChatGPT API設定を初期化
+func newChatGPTConfig() ChatGPTConfig {
+	baseURL := os.Getenv("CHATGPT_BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://api.openai.com/v1"
+	}
+
+	model := os.Getenv("CHATGPT_MODEL")
+	if model == "" {
+		model = "gpt-4o-mini"
+	}
+
+	apiKey := os.Getenv("CHATGPT_API_KEY")
+	enabled := os.Getenv("CHATGPT_ENABLED") == "true" && apiKey != ""
+
+	return ChatGPTConfig{
+		APIKey:  apiKey,
+		BaseURL: baseURL,
+		Model:   model,
+		Enabled: enabled,
 	}
 }
 

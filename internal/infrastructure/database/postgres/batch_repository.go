@@ -222,9 +222,10 @@ func (r *BatchRepositoryImpl) SaveBookScoreDaily(ctx context.Context, bookID str
 	query := `
 		INSERT INTO book_scores_daily (book_id, date, score, article_count, created_at)
 		VALUES ($1, $2, $3, $4, NOW())
-		ON CONFLICT (book_id, date) DO UPDATE SET
+		ON CONFLICT (book_id) DO UPDATE SET
 			score = book_scores_daily.score + EXCLUDED.score,
-			article_count = book_scores_daily.article_count + EXCLUDED.article_count
+			article_count = book_scores_daily.article_count + EXCLUDED.article_count,
+			date = GREATEST(book_scores_daily.date, EXCLUDED.date)
 	`
 	_, err := r.db.ExecContext(ctx, query, bookID, date, score, articleCount)
 	if err != nil {
@@ -457,6 +458,110 @@ func (r *BatchRepositoryImpl) UpdateBookAmazonURL(ctx context.Context, bookID st
 	_, err := r.db.ExecContext(ctx, query, bookID, amazonURL)
 	if err != nil {
 		return fmt.Errorf("failed to update book amazon url: %w", err)
+	}
+	return nil
+}
+
+// GetBooksWithoutCategory カテゴリが未設定の書籍を取得（スコアが高い順）
+func (r *BatchRepositoryImpl) GetBooksWithoutCategory(ctx context.Context, limit int) ([]*repository.BookForCategorize, error) {
+	query := `
+		SELECT b.id, b.title, COALESCE(b.overview, '') as overview, COALESCE(SUM(bsd.score), 0) as total_score
+		FROM books b
+		LEFT JOIN book_categories bc ON b.id = bc.book_id
+		LEFT JOIN book_scores_daily bsd ON b.id = bsd.book_id
+		WHERE bc.id IS NULL
+		GROUP BY b.id, b.title, b.overview
+		ORDER BY total_score DESC, b.latest_mentioned_at DESC NULLS LAST, b.created_at DESC
+		LIMIT $1
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get books without category: %w", err)
+	}
+	defer rows.Close()
+
+	var books []*repository.BookForCategorize
+	for rows.Next() {
+		var book repository.BookForCategorize
+		var score float64
+		if err := rows.Scan(&book.ID, &book.Title, &book.Overview, &score); err != nil {
+			return nil, fmt.Errorf("failed to scan book: %w", err)
+		}
+		books = append(books, &book)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate books: %w", err)
+	}
+
+	return books, nil
+}
+
+// GetAllCategories 全カテゴリを取得
+func (r *BatchRepositoryImpl) GetAllCategories(ctx context.Context) ([]*repository.CategoryInfo, error) {
+	query := `
+		SELECT id, name
+		FROM categories
+		ORDER BY id
+	`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get categories: %w", err)
+	}
+	defer rows.Close()
+
+	var categories []*repository.CategoryInfo
+	for rows.Next() {
+		var cat repository.CategoryInfo
+		if err := rows.Scan(&cat.ID, &cat.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan category: %w", err)
+		}
+		categories = append(categories, &cat)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate categories: %w", err)
+	}
+
+	return categories, nil
+}
+
+// SaveBookCategory 書籍のカテゴリを保存
+func (r *BatchRepositoryImpl) SaveBookCategory(ctx context.Context, bookID string, categoryID string) error {
+	query := `
+		INSERT INTO book_categories (book_id, category_id, score, rank, created_at)
+		VALUES ($1, $2, 0, 1, NOW())
+		ON CONFLICT (book_id, category_id) DO NOTHING
+	`
+	_, err := r.db.ExecContext(ctx, query, bookID, categoryID)
+	if err != nil {
+		return fmt.Errorf("failed to save book category: %w", err)
+	}
+	return nil
+}
+
+// UpdateCategoryScores 全カテゴリのスコアを更新
+// book_categoriesに紐づく書籍のbook_scores_dailyスコア合計をcategories.scoreに保存
+func (r *BatchRepositoryImpl) UpdateCategoryScores(ctx context.Context) error {
+	// 各カテゴリごとにスコアを計算して更新
+	query := `
+		UPDATE categories c
+		SET score = COALESCE(
+			(
+				SELECT SUM(bsd.score)
+				FROM book_categories bc
+				INNER JOIN book_scores_daily bsd ON bc.book_id = bsd.book_id
+				WHERE bc.category_id = c.id
+			),
+			0
+		),
+		updated_at = NOW()
+	`
+	_, err := r.db.ExecContext(ctx, query)
+	if err != nil {
+		return fmt.Errorf("failed to update category scores: %w", err)
 	}
 	return nil
 }
