@@ -129,7 +129,7 @@ LIMIT $1
 ### ローカル環境
 
 ```bash
-# 基本的な起動（デフォルト50冊処理）
+# 基本的な起動（デフォルト40冊処理）
 BATCH_TYPE=categorize CHATGPT_ENABLED=true CHATGPT_API_KEY=sk-xxx go run ./cmd/batch/...
 
 # 処理件数を指定

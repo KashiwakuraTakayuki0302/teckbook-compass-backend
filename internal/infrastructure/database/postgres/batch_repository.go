@@ -222,9 +222,10 @@ func (r *BatchRepositoryImpl) SaveBookScoreDaily(ctx context.Context, bookID str
 	query := `
 		INSERT INTO book_scores_daily (book_id, date, score, article_count, created_at)
 		VALUES ($1, $2, $3, $4, NOW())
-		ON CONFLICT (book_id, date) DO UPDATE SET
+		ON CONFLICT (book_id) DO UPDATE SET
 			score = book_scores_daily.score + EXCLUDED.score,
-			article_count = book_scores_daily.article_count + EXCLUDED.article_count
+			article_count = book_scores_daily.article_count + EXCLUDED.article_count,
+			date = GREATEST(book_scores_daily.date, EXCLUDED.date)
 	`
 	_, err := r.db.ExecContext(ctx, query, bookID, date, score, articleCount)
 	if err != nil {
