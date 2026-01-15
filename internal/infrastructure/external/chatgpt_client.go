@@ -89,7 +89,7 @@ type ChatGPTErrorDetail struct {
 
 // CategoryResult カテゴリ分類結果
 type CategoryResult struct {
-	CategoryID int `json:"category_id"`
+	CategoryCode string `json:"category_code"`
 	// トークン使用量
 	PromptTokens     int
 	CompletionTokens int
@@ -169,8 +169,14 @@ func (c *ChatGPTClient) CategorizeBook(ctx context.Context, title, overview, isb
 	log.Printf("ChatGPT response: %s (tokens: prompt=%d, completion=%d, total=%d)",
 		content, chatResp.Usage.PromptTokens, chatResp.Usage.CompletionTokens, chatResp.Usage.TotalTokens)
 
+	// 有効なカテゴリコードのマップを作成
+	validCodes := make(map[string]bool, len(categories))
+	for _, cat := range categories {
+		validCodes[cat.Code] = true
+	}
+
 	// JSONを抽出してパース
-	result, err := c.parseCategorizationResult(content)
+	result, err := c.parseCategorizationResult(content, validCodes)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrChatGPTInvalidJSON, err)
 	}
@@ -185,22 +191,21 @@ func (c *ChatGPTClient) CategorizeBook(ctx context.Context, title, overview, isb
 
 // CategoryInfo カテゴリ情報
 type CategoryInfo struct {
-	ID   int    // 数値ID（1-10）
 	Code string // カテゴリコード（例: "ai-ml"）
 	Name string // カテゴリ名（例: "AI / 機械学習"）
 }
 
 // buildCategorizationPrompt 分類用プロンプトを構築
 func (c *ChatGPTClient) buildCategorizationPrompt(title, overview, isbn13 string, categories []CategoryInfo) string {
-	// カテゴリ一覧を構築
+	// カテゴリ一覧を構築（コードと名前のみ）
 	categoryList := ""
 	for _, cat := range categories {
-		categoryList += fmt.Sprintf("%d: %s (%s)\n", cat.ID, cat.Code, cat.Name)
+		categoryList += fmt.Sprintf("- %s: %s\n", cat.Code, cat.Name)
 	}
 
 	prompt := fmt.Sprintf(`あなたは技術書を分類する専門家です。  
 以下の「技術書タイトル」「技術書概要」「ISBN13」をもとに、  
-指定された10個のカテゴリの中から **最も適切な1つだけ** を選択してください。
+指定されたカテゴリの中から **最も適切な1つだけ** を選択してください。
 
 ### 分類ルール
 
@@ -209,7 +214,7 @@ func (c *ChatGPTClient) buildCategorizationPrompt(title, overview, isbn13 string
 - ISBN13は「書籍の種類・分野を補助的に判断する情報」として使用してよい
 - 判断が難しい場合は「想定読者が最も多いカテゴリ」を基準にする
 
-### カテゴリ一覧（番号: コード (カテゴリ名)）
+### カテゴリ一覧（コード: カテゴリ名）
 
 %s
 
@@ -228,15 +233,17 @@ func (c *ChatGPTClient) buildCategorizationPrompt(title, overview, isbn13 string
 
 ### 出力形式（JSONのみで返すこと）
 
-`+"```json\n{\"category_id\": number}\n```", categoryList, title, overview, isbn13)
+category_codeには上記カテゴリ一覧のコード（例: "ai-ml", "web"など）を指定してください。
+
+`+"```json\n{\"category_code\": \"string\"}\n```", categoryList, title, overview, isbn13)
 
 	return prompt
 }
 
 // parseCategorizationResult ChatGPTの応答からカテゴリ結果をパース
-func (c *ChatGPTClient) parseCategorizationResult(content string) (*CategoryResult, error) {
+func (c *ChatGPTClient) parseCategorizationResult(content string, validCodes map[string]bool) (*CategoryResult, error) {
 	// JSONブロックを抽出（```json ... ``` または { ... }）
-	jsonPattern := regexp.MustCompile("(?s)```json\\s*(.+?)\\s*```|\\{[^}]*\"category_id\"[^}]*\\}")
+	jsonPattern := regexp.MustCompile("(?s)```json\\s*(.+?)\\s*```|\\{[^}]*\"category_code\"[^}]*\\}")
 	matches := jsonPattern.FindStringSubmatch(content)
 
 	var jsonStr string
@@ -254,8 +261,18 @@ func (c *ChatGPTClient) parseCategorizationResult(content string) (*CategoryResu
 		return nil, fmt.Errorf("failed to parse json: %w, content: %s", err, content)
 	}
 
-	if result.CategoryID < 1 || result.CategoryID > 10 {
-		return nil, fmt.Errorf("invalid category_id: %d", result.CategoryID)
+	// カテゴリコードが空の場合
+	if result.CategoryCode == "" {
+		return nil, fmt.Errorf("category_code is empty, content: %s", content)
+	}
+
+	// カテゴリコードが有効なものか検証
+	if !validCodes[result.CategoryCode] {
+		validCodesList := make([]string, 0, len(validCodes))
+		for code := range validCodes {
+			validCodesList = append(validCodesList, code)
+		}
+		return nil, fmt.Errorf("invalid category_code: %q (valid codes: %v)", result.CategoryCode, validCodesList)
 	}
 
 	return &result, nil

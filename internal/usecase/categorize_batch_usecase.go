@@ -67,15 +67,13 @@ func (u *CategorizeBatchUsecase) Run(ctx context.Context, limit int) (*Categoriz
 
 	// カテゴリ情報をChatGPT用に変換
 	categories := make([]external.CategoryInfo, len(dbCategories))
-	categoryIDMap := make(map[int]string) // 数値ID -> カテゴリコード
+	validCategoryIDs := make(map[string]bool) // 有効なカテゴリコードのセット
 	for i, cat := range dbCategories {
-		numericID := i + 1
 		categories[i] = external.CategoryInfo{
-			ID:   numericID,
 			Code: cat.ID,
 			Name: cat.Name,
 		}
-		categoryIDMap[numericID] = cat.ID
+		validCategoryIDs[cat.ID] = true
 	}
 
 	log.Printf("取得したカテゴリ数: %d", len(categories))
@@ -169,23 +167,22 @@ func (u *CategorizeBatchUsecase) Run(ctx context.Context, limit int) (*Categoriz
 		result.TotalCompletionTokens += catResult.CompletionTokens
 		result.TotalTokens += catResult.TotalTokens
 
-		// カテゴリIDを変換
-		categoryCode, ok := categoryIDMap[catResult.CategoryID]
-		if !ok {
-			log.Printf("Warning: 不明なカテゴリID (BookID: %s, CategoryID: %d)", book.ID, catResult.CategoryID)
+		// カテゴリコードの検証（ChatGPT側で既に検証済みだが、念のため再確認）
+		if !validCategoryIDs[catResult.CategoryCode] {
+			log.Printf("Warning: 不明なカテゴリコード (BookID: %s, CategoryCode: %s)", book.ID, catResult.CategoryCode)
 			result.Errors++
 			continue
 		}
 
 		// カテゴリを保存
-		if err := u.repo.SaveBookCategory(ctx, book.ID, categoryCode); err != nil {
+		if err := u.repo.SaveBookCategory(ctx, book.ID, catResult.CategoryCode); err != nil {
 			log.Printf("Warning: カテゴリ保存エラー (BookID: %s): %v", book.ID, err)
 			result.Errors++
 			continue
 		}
 
 		result.CategorizedBooks++
-		log.Printf("カテゴリ設定成功: %s -> %s (tokens: %d)", book.Title, categoryCode, catResult.TotalTokens)
+		log.Printf("カテゴリ設定成功: %s -> %s (tokens: %d)", book.Title, catResult.CategoryCode, catResult.TotalTokens)
 
 		// レートリミット対策（1分に3回までの制限があるため、2冊処理したら1分待機）
 		// 最後の書籍の場合は待機不要
