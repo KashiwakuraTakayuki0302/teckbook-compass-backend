@@ -23,10 +23,16 @@ func NewCategoryUsecase(
 	}
 }
 
+// GetCategoriesWithBooksParams カテゴリと書籍取得のパラメータ
+type GetCategoriesWithBooksParams struct {
+	MaxCategories int // 返却するカテゴリ数の上限（0は全件）
+	Limit         int // 各カテゴリ内の書籍数の上限（0は全件）
+}
+
 // GetCategoriesWithBooks カテゴリと関連書籍を取得
-func (uc *CategoryUsecase) GetCategoriesWithBooks(ctx context.Context) (*dto.CategoryWithBooksResponse, error) {
+func (uc *CategoryUsecase) GetCategoriesWithBooks(ctx context.Context, params GetCategoriesWithBooksParams) (*dto.CategoryWithBooksResponse, error) {
 	// カテゴリと書籍を取得
-	categories, err := uc.categoryRepo.GetCategoriesWithBooks(ctx, 10)
+	categories, err := uc.categoryRepo.GetCategoriesWithBooks(ctx, params.MaxCategories, params.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +47,7 @@ func (uc *CategoryUsecase) GetCategoriesWithBooks(ctx context.Context) (*dto.Cat
 				BookID:    book.BookID,
 				Title:     book.Title,
 				Thumbnail: book.Thumbnail,
+				Score:     book.Score,
 			})
 		}
 
@@ -49,6 +56,7 @@ func (uc *CategoryUsecase) GetCategoriesWithBooks(ctx context.Context) (*dto.Cat
 			Name:     category.Name,
 			Icon:     category.Icon,
 			TrendTag: category.TrendTag,
+			Score:    category.Score,
 			Books:    books,
 		})
 	}

@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"teckbook-compass-backend/internal/infrastructure/config"
-	"teckbook-compass-backend/internal/infrastructure/database/mock"
 	"teckbook-compass-backend/internal/infrastructure/database/postgres"
 	"teckbook-compass-backend/internal/infrastructure/secrets"
 	"teckbook-compass-backend/internal/interface/handler"
@@ -42,7 +41,7 @@ func init() {
 	}
 
 	// Repository
-	categoryRepo := mock.NewCategoryRepositoryMock()
+	categoryRepo := postgres.NewCategoryRepository(db.DB)
 	bookRepo := postgres.NewBookRepository(db.DB)
 
 	// Usecase

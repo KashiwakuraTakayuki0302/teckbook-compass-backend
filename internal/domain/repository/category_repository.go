@@ -8,5 +8,7 @@ import (
 // CategoryRepository カテゴリリポジトリインターフェース
 type CategoryRepository interface {
 	// GetCategoriesWithBooks カテゴリと関連する書籍を取得
-	GetCategoriesWithBooks(ctx context.Context, limit int) ([]*entity.Category, error)
+	// maxCategories: 返却するカテゴリ数の上限（0は全件）
+	// bookLimit: 各カテゴリ内の書籍数の上限（0は全件）
+	GetCategoriesWithBooks(ctx context.Context, maxCategories int, bookLimit int) ([]*entity.Category, error)
 }
