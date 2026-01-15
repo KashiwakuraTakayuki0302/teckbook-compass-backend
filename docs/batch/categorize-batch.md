@@ -40,7 +40,7 @@ TechBook Compassの技術書に対して、ChatGPT APIを使用してカテゴ�
 
 2. **ChatGPT APIでカテゴリを判定**
    - 書籍のタイトル、概要、ISBN13をプロンプトに含めて送信
-   - 10カテゴリの中から最も適切な1つを返答
+   - 10カテゴリの中から最も適切な1つを選択し、カテゴリコードを返答
 
 3. **結果をDBに保存**
    - `book_categories`テーブルに書籍とカテゴリの紐付けを保存
@@ -74,18 +74,18 @@ LIMIT $1
 
 ## カテゴリ一覧
 
-| ID | カテゴリコード | カテゴリ名 |
-|----|---------------|-----------|
-| 1 | `ai-ml` | AI / 機械学習 |
-| 2 | `frontend` | Web / フロントエンド |
-| 3 | `mobile` | モバイル / アプリ開発 |
-| 4 | `cloud` | クラウド（AWS / GCP / Azure） |
-| 5 | `infra-devops` | インフラ / DevOps |
-| 6 | `backend` | バックエンド / API / Webアーキテクチャ |
-| 7 | `database` | データベース / データエンジニアリング |
-| 8 | `security` | セキュリティ |
-| 9 | `beginner-cs` | プログラミング入門 / CS基礎 |
-| 10 | `pm-business` | PM / プロダクト / ビジネス・キャリア |
+| カテゴリコード | カテゴリ名 |
+|---------------|-----------|
+| `ai-ml` | AI / 機械学習 |
+| `frontend` | Web / フロントエンド |
+| `mobile` | モバイル / アプリ開発 |
+| `cloud` | クラウド（AWS / GCP / Azure） |
+| `infra-devops` | インフラ / DevOps |
+| `backend` | バックエンド / API / Webアーキテクチャ |
+| `database` | データベース / データエンジニアリング |
+| `security` | セキュリティ |
+| `beginner-cs` | プログラミング入門 / CS基礎 |
+| `pm-business` | PM / プロダクト / ビジネス・キャリア |
 
 ## 環境変数
 
@@ -202,10 +202,10 @@ ChatGPT APIには1分あたり3回のリクエスト制限があるため、以�
 処理対象の書籍数: 5
 推定トークン使用量: 約 3500 トークン（5冊 × 約700トークン/冊）
 処理中 [1/5]: リーダブルコード (ISBN: 9784873115658)
-ChatGPT response: {"category_id": 9} (tokens: prompt=720, completion=15, total=735)
+ChatGPT response: {"category_code": "beginner-cs"} (tokens: prompt=720, completion=15, total=735)
 カテゴリ設定成功: リーダブルコード -> beginner-cs (tokens: 735)
 処理中 [2/5]: 実践ドメイン駆動設計 (ISBN: 9784798131610)
-ChatGPT response: {"category_id": 6} (tokens: prompt=680, completion=15, total=695)
+ChatGPT response: {"category_code": "backend"} (tokens: prompt=680, completion=15, total=695)
 カテゴリ設定成功: 実践ドメイン駆動設計 -> backend (tokens: 695)
 レート制限対策: 1分間待機します...
 ...

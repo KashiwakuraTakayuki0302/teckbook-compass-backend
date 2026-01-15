@@ -17,6 +17,7 @@ type Book struct {
 	RakutenURL   string     // 楽天 URL
 	Rank         int        // カテゴリ内のランク
 	CategoryID   string     // 所属カテゴリID
+	Score        float64    // 書籍スコア（book_scores_dailyからの合計）
 	CreatedAt    time.Time  // 作成日時
 	UpdatedAt    time.Time  // 更新日時
 }

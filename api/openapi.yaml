@@ -14,9 +14,24 @@ paths:
   /categories/with-books:
     get:
       summary: Get categories with ranked books
-      description: Returns all categories and the top-ranked books within each category.
+      description: Returns categories and the top-ranked books within each category, sorted by total book scores.
       tags:
         - Categories
+      parameters:
+        - name: max_categories
+          in: query
+          description: Maximum number of categories to return (if not specified, returns all)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: limit
+          in: query
+          description: Maximum number of books per category (if not specified, returns all)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
       responses:
         '200':
           description: Successful response
@@ -168,6 +183,7 @@ components:
         - name
         - icon
         - trendTag
+        - score
         - books
       properties:
         id:
@@ -187,6 +203,11 @@ components:
           description: Trend indicator for the category
           enum: [hot, popular, attention]
           example: hot
+        score:
+          type: number
+          format: float
+          description: Total score of books in this category
+          example: 1500.5
         books:
           type: array
           description: Top ranked books in this category
@@ -200,6 +221,7 @@ components:
         - bookId
         - title
         - thumbnail
+        - score
       properties:
         rank:
           type: integer
@@ -219,6 +241,11 @@ components:
           format: uri
           description: URL to book cover image
           example: https://example.com/books/001.jpg
+        score:
+          type: number
+          format: float
+          description: Book score
+          example: 250.5
 
     RankedBookDetail:
       type: object

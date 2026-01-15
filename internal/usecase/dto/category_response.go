@@ -11,13 +11,15 @@ type CategoryItem struct {
 	Name     string     `json:"name"`
 	Icon     string     `json:"icon"`
 	TrendTag string     `json:"trendTag"`
+	Score    float64    `json:"score"`
 	Books    []BookItem `json:"books"`
 }
 
 // BookItem 書籍アイテム
 type BookItem struct {
-	Rank      int    `json:"rank"`
-	BookID    string `json:"bookId"`
-	Title     string `json:"title"`
-	Thumbnail string `json:"thumbnail"`
+	Rank      int     `json:"rank"`
+	BookID    string  `json:"bookId"`
+	Title     string  `json:"title"`
+	Thumbnail string  `json:"thumbnail"`
+	Score     float64 `json:"score"`
 }

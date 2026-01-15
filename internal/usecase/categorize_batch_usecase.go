@@ -67,15 +67,13 @@ func (u *CategorizeBatchUsecase) Run(ctx context.Context, limit int) (*Categoriz
 
 	// カテゴリ情報をChatGPT用に変換
 	categories := make([]external.CategoryInfo, len(dbCategories))
-	categoryIDMap := make(map[int]string) // 数値ID -> カテゴリコード
+	validCategoryCodes := make(map[string]bool)
 	for i, cat := range dbCategories {
-		numericID := i + 1
 		categories[i] = external.CategoryInfo{
-			ID:   numericID,
 			Code: cat.ID,
 			Name: cat.Name,
 		}
-		categoryIDMap[numericID] = cat.ID
+		validCategoryCodes[cat.ID] = true
 	}
 
 	log.Printf("取得したカテゴリ数: %d", len(categories))
@@ -169,10 +167,10 @@ func (u *CategorizeBatchUsecase) Run(ctx context.Context, limit int) (*Categoriz
 		result.TotalCompletionTokens += catResult.CompletionTokens
 		result.TotalTokens += catResult.TotalTokens
 
-		// カテゴリIDを変換
-		categoryCode, ok := categoryIDMap[catResult.CategoryID]
-		if !ok {
-			log.Printf("Warning: 不明なカテゴリID (BookID: %s, CategoryID: %d)", book.ID, catResult.CategoryID)
+		// カテゴリコードを検証
+		categoryCode := catResult.CategoryCode
+		if !validCategoryCodes[categoryCode] {
+			log.Printf("Warning: 不明なカテゴリコード (BookID: %s, CategoryCode: %s)", book.ID, categoryCode)
 			result.Errors++
 			continue
 		}

@@ -14,7 +14,7 @@ func NewCategoryRepositoryMock() *CategoryRepositoryMock {
 }
 
 // GetCategoriesWithBooks カテゴリと関連書籍を取得（モックデータ）
-func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, limit int) ([]*entity.Category, error) {
+func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, maxCategories int, bookLimit int) ([]*entity.Category, error) {
 	// モックデータ: AI・機械学習カテゴリ
 	aiCategory := &entity.Category{
 		ID:       "ai-ml",
@@ -110,9 +110,18 @@ func (r *CategoryRepositoryMock) GetCategoriesWithBooks(ctx context.Context, lim
 
 	categories := []*entity.Category{aiCategory, webCategory, cloudCategory}
 
-	// limitが指定されている場合は制限
-	if limit > 0 && limit < len(categories) {
-		categories = categories[:limit]
+	// maxCategoriesが指定されている場合は制限
+	if maxCategories > 0 && maxCategories < len(categories) {
+		categories = categories[:maxCategories]
+	}
+
+	// bookLimitが指定されている場合は各カテゴリの書籍数を制限
+	if bookLimit > 0 {
+		for _, cat := range categories {
+			if len(cat.Books) > bookLimit {
+				cat.Books = cat.Books[:bookLimit]
+			}
+		}
 	}
 
 	return categories, nil
